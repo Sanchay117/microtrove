@@ -9,7 +9,7 @@ Text for each field of the AKINDO submission form. Items in [brackets] still nee
 | Live project | [live app URL, once the web app is hosted] |
 | GitHub | https://github.com/Sanchay117/microtrove |
 | Deck | [deck link, once shared] |
-| Pitch video | [video URL] |
+| Pitch video | https://youtu.be/pOMobneJlXk |
 | Loan book (`Microtroves`) | https://explorer.test.mezo.org/address/0x6Af91a391C31e85479bd324698c30697EbEC8C77 |
 | Lender vault (`MicrotroveVault`) | https://explorer.test.mezo.org/address/0xE128f5F21Adac4a11A22B55Da77bfdb6ab1304e2 |
 | Keeper liquidation, live | https://explorer.test.mezo.org/tx/0xfe7a0c608465370d633178d33ef1d7696ad057026eb36172b0f28c32a48dcd51 |
