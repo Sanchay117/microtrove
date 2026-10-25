@@ -1,0 +1,54 @@
+{
+  "chainId": 31611,
+  "rpcUrl": "https://rpc.test.mezo.org",
+  "explorer": "https://explorer.test.mezo.org",
+  "deployBlock": 16360581,
+  "contracts": {
+    "MicrotroveVault": "0xE128f5F21Adac4a11A22B55Da77bfdb6ab1304e2",
+    "Microtroves": "0x6Af91a391C31e85479bd324698c30697EbEC8C77"
+  },
+  "params": {
+    "interestRateBps": 500,
+    "issuanceFeeBps": 50,
+    "termSeconds": 7776000,
+    "minDebt": "25000000000000000000",
+    "maxDebt": "200000000000000000000",
+    "mcr": "1100000000000000000",
+    "maxCr": "5000000000000000000",
+    "expiryBonusBps": 1000,
+    "underwaterBonusBps": 500,
+    "protocolFeeBps": 0
+  },
+  "mezo": {
+    "MUSD": "0x118917a40FAF1CD7a13dB0Ef56C86De7973Ac503",
+    "PriceFeed": "0x86bCF0841622a5dAC14A313a15f96A95421b9366",
+    "BorrowerOperations": "0xCdF7028ceAB81fA0C6971208e83fa7872994beE5",
+    "BorrowerOperationsSignatures": "0xD757e3646AF370b15f32EB557F0F8380Df7D639e",
+    "HintHelpers": "0x4e4cBA3779d56386ED43631b4dCD6d8EacEcBCF6",
+    "SortedTroves": "0x722E4D24FD6Ff8b0AC679450F3D91294607268fA",
+    "TroveManager": "0xE47c80e8c23f6B4A1aE41c34837a0599D5D16bb0"
+  },
+  "transactions": {
+    "deployVault": "0x70e96d93a2bc157413a046ebb51a69295b0292bc691cb0a66ba8ca77f6ca49ea",
+    "deployMicrotroves": "0x6fc082509afaaa93147acdcadf0bbbe66da288cf34fd91ab242725f728ba4f06",
+    "setLoanBook": "0x2720eacf5853684c0e84c6154bc4e216f1a4a9d3cac6a2fdca777e4b3f440f45",
+    "seedDeposit1400Musd": "0x6721cb0bf05240d5b35d3a99cdaf69a424293d58e3683644a45fa7fe3424beb1",
+    "openAndBorrow100Musd": "0x62698fb4161b379a1ddc1c88819fda142242fec31ea3333a4f7d5011a9fa7ecd",
+    "repay50Musd": "0x8ecfcc6e439c557b146dfa19f013eb206860997234b7ddd8ae062351fa976c26",
+    "close": "0xb82399bfeb6a13e5dde6cdb823c318f5f9a09f5e64c28c5df2b3ac0d33da66b1",
+    "fundKeeperBtc": "0x3425b966aefad31a4efc09461bcf812a55531002e8101a3cd4828c8b5f0b6f4c",
+    "fundKeeper60Musd": "0x1295444b8c62db78acfb8c9fa67a52966b8c2b17046f503e619f31c9b5c90745",
+    "expiryDemoSetTerm1h": "0xc78229b93c72d21d8b30f772fa7eebdf7e59a47f8da58283cef98b3ac8fc8a5d",
+    "expiryDemoRepayAll": "0x10b891afc79dad5bcdd108d9b076bb201188790c7327d72883a3dc8186a5eebd",
+    "expiryDemoBorrow40Musd": "0xacd3596ace2616460c1ed0350030f5be3525eae54d264979c923b305aea85609",
+    "expiryDemoRestoreTerm90d": "0xeac8e308003d197df223c101e0c5bf597a9b9d26e21e890fa5a091634b81d033",
+    "keeperApproveMusd": "0xf5acc29062201278accc6f83e5b0b7b65c43ccf5c2a089b980f5b2f196c03fda",
+    "keeperLiquidateMatured": "0xfe7a0c608465370d633178d33ef1d7696ad057026eb36172b0f28c32a48dcd51",
+    "borrowerClaimSurplus": "0xc3a17a4a897a2284c6d53a65e6dcb524019358363927c54a8b6d67db5d4e568a"
+  },
+  "keeper": {
+    "address": "0xc9Bea2900c81FB0148851Ec6e70E90B848288653",
+    "note": "Testnet keeper wallet. For the expiry demo the term was set to 1 hour for one borrow, then restored to 90 days."
+  },
+  "verification": "Sourcify exact match for both contracts"
+}

@@ -1,0 +1,28 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+solc_version = "0.8.24"
+# Mezo's EVM matches the MUSD contracts' target (no PUSH0).
+evm_version = "london"
+optimizer = true
+optimizer_runs = 200
+remappings = [
+    "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
+    "forge-std/=lib/forge-std/src/",
+]
+
+[fuzz]
+runs = 512
+
+[invariant]
+runs = 64
+depth = 400
+fail_on_revert = false
+
+[rpc_endpoints]
+mezo_testnet = "https://rpc.test.mezo.org"
+mezo = "https://rpc.mezo.org"
+
+[fmt]
+line_length = 100

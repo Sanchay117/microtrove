@@ -1,0 +1,24 @@
+{
+  "name": "microtrove-keeper",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Liquidates matured or undercollateralized Microtrove loans and pays the vault's withdrawal queue.",
+  "type": "module",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env src/index.ts",
+    "once": "node --env-file-if-exists=.env src/index.ts --once",
+    "watch": "node --env-file-if-exists=.env src/index.ts --dry-run",
+    "test": "node --test test/*.test.ts",
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "viem": "2.57.11"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.2",
+    "typescript": "5.9.3"
+  }
+}

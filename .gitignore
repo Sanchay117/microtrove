@@ -1,0 +1,17 @@
+# Foundry
+contracts/out/
+contracts/cache/
+contracts/broadcast/*/31337/
+contracts/broadcast/**/dry-run/
+
+# Secrets
+.env
+**/.env
+.env*.local
+**/.env*.local
+
+# Node
+node_modules/
+dist/
+*.tsbuildinfo
+.DS_Store
