@@ -2,7 +2,7 @@
 
 **Borrow 25 to 200 MUSD against bitcoin on Mezo, funded by anyone who lends MUSD.**
 
-[Watch the two-minute demo](https://youtu.be/pOMobneJlXk)
+[Try it on Mezo Testnet](https://microtrove.vercel.app) · [Watch the two-minute demo](https://youtu.be/pOMobneJlXk)
 
 An MUSD trove needs at least 1,800 MUSD of debt, so a newcomer has to lock about $2,000 of BTC to
 try it. Microtrove builds Mezo's own unshipped design for small loans,
