@@ -71,4 +71,4 @@ export const FACTS = {
 };
 
 /** Links for the end card. Fill these in once the app is hosted and the repository is public, then re-render. */
-export const LINKS: { label: string; value: string }[] = [];
+export const LINKS: { label: string; value: string }[] = [{ label: "Code", value: "github.com/Sanchay117/microtrove" }];

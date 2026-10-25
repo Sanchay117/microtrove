@@ -14,6 +14,7 @@
     "render": "remotion render src/index.ts Microtrove out/microtrove.mp4 --crf 18",
     "master": "node scripts/master.ts",
     "check-mix": "node scripts/check-mix.ts",
+    "thumb": "remotion still src/index.ts Thumbnail out/thumbnail-1920.png && ffmpeg -y -loglevel error -i out/thumbnail-1920.png -vf scale=1280:720:flags=lanczos out/thumbnail-1280.png",
     "sheet": "node scripts/sheet.ts",
     "typecheck": "tsc -p ."
   },

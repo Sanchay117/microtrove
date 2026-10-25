@@ -7,7 +7,7 @@ Text for each field of the AKINDO submission form. Items in [brackets] still nee
 | | |
 | --- | --- |
 | Live project | [live app URL, once the web app is hosted] |
-| GitHub | [public repository URL, once pushed] |
+| GitHub | https://github.com/Sanchay117/microtrove |
 | Deck | [deck link, once shared] |
 | Pitch video | [video URL] |
 | Loan book (`Microtroves`) | https://explorer.test.mezo.org/address/0x6Af91a391C31e85479bd324698c30697EbEC8C77 |

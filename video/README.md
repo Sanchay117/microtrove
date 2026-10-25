@@ -14,6 +14,7 @@ The two-minute pitch video: motion graphics in [Remotion](https://www.remotion.d
 | 6 | `npm run render` | Renders `out/microtrove.mp4`. `npm run studio` previews it. |
 | 7 | `npm run master` | Normalizes loudness to −16 LUFS: `out/microtrove-final.mp4`. |
 | 8 | `npm run check-mix` | Transcribes the final mix, to check the music never masks the voice. |
+| 9 | `npm run thumb` | Renders the cover, [src/Thumbnail.tsx](src/Thumbnail.tsx): `out/thumbnail-1920.png` and `out/thumbnail-1280.png`. |
 
 Steps 1, 2, 3 and 8 need `DEEPGRAM_API_KEY` in `video/.env` (git-ignored). The narration and the app clips are committed, since they cost an API call or a testnet transaction to make again; run `npm run sfx` after cloning to rebuild the music and effects.
 
@@ -25,4 +26,4 @@ The keeper and claim scenes use the real log and transaction hashes from the exp
 
 ## End card links
 
-Add the hosted app and repository links to `LINKS` in [src/data.ts](src/data.ts) and re-render (steps 6 and 7).
+`LINKS` in [src/data.ts](src/data.ts) holds the repository link; add the hosted app's once it is live and re-render (steps 6 and 7).
