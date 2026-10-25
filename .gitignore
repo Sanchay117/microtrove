@@ -10,6 +10,12 @@ contracts/broadcast/**/dry-run/
 .env*.local
 **/.env*.local
 
+# Video frames and renders; music and effects are rebuilt by `npm run sfx`
+video/build/
+video/out/
+video/public/music/
+video/public/sfx/
+
 # Node
 node_modules/
 dist/

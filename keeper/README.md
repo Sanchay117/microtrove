@@ -16,8 +16,8 @@ calls `liquidate` first.
 
 ## Live on Mezo Testnet
 
-On Oct 25, 2026 this keeper liquidated a matured 40 MUSD loan on its own, 36 seconds after
-the loan's due date. The term had been shortened to 1 hour for that one borrow so it
+On Oct 25, 2026 this keeper liquidated a matured 40 MUSD loan on its own. It spotted the
+loan 36 seconds after its due date, and the liquidation landed in a block 48 seconds after it. The term had been shortened to 1 hour for that one borrow so it
 would mature during the demo. The run's log, with the startup banner and four 10-minute
 status lines (14:11 to 14:42) trimmed:
 

@@ -1,0 +1,36 @@
+{
+  "name": "microtrove-video",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "The Microtrove demo video: Remotion motion graphics, Playwright footage of the live app, Deepgram narration.",
+  "scripts": {
+    "tts": "node scripts/tts.ts",
+    "words": "node scripts/words.ts",
+    "check-tts": "node scripts/check-tts.ts",
+    "sfx": "node scripts/sfx.ts",
+    "capture": "node scripts/capture.ts",
+    "studio": "remotion studio src/index.ts",
+    "render": "remotion render src/index.ts Microtrove out/microtrove.mp4 --crf 18",
+    "master": "node scripts/master.ts",
+    "check-mix": "node scripts/check-mix.ts",
+    "sheet": "node scripts/sheet.ts",
+    "typecheck": "tsc -p ."
+  },
+  "engines": {
+    "node": ">=22.18"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.538",
+    "@remotion/google-fonts": "4.0.538",
+    "react": "19.1.1",
+    "react-dom": "19.1.1",
+    "remotion": "4.0.538"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.2",
+    "@types/react": "19.3.0",
+    "playwright": "1.64.1",
+    "typescript": "5.9.3"
+  }
+}

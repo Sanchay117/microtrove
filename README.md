@@ -27,7 +27,7 @@ Every step has run on chain:
 - A borrower opened, borrowed, repaid and closed a loan.
 - Lenders deposited and withdrew, both instantly and through the queue.
 - The [keeper bot](keeper) liquidated a matured loan
-  [36 seconds after its due date](https://explorer.test.mezo.org/tx/0xfe7a0c608465370d633178d33ef1d7696ad057026eb36172b0f28c32a48dcd51),
+  [48 seconds after its due date](https://explorer.test.mezo.org/tx/0xfe7a0c608465370d633178d33ef1d7696ad057026eb36172b0f28c32a48dcd51),
   for a $3.98 profit.
 - The borrower claimed the rest of their BTC from the web app.
 

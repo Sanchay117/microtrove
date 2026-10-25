@@ -1,0 +1,206 @@
+{
+  "fps": 30,
+  "total": 129.76666666666668,
+  "scenes": [
+    {
+      "id": "open",
+      "start": 0,
+      "seconds": 13,
+      "frames": 390,
+      "lines": [
+        {
+          "file": "audio/open-1.wav",
+          "text": "Mezo’s MUSD lets you borrow against bitcoin.",
+          "start": 1,
+          "seconds": 3.5234791666666667
+        },
+        {
+          "file": "audio/open-2.wav",
+          "text": "But a trove starts at 1,800 MUSD, so trying it means locking about $2,200 of bitcoin.",
+          "start": 4.823479166666667,
+          "seconds": 7.5599791666666665
+        }
+      ]
+    },
+    {
+      "id": "rfc",
+      "start": 13,
+      "seconds": 8.466666666666667,
+      "frames": 254,
+      "lines": [
+        {
+          "file": "audio/rfc-1.wav",
+          "text": "Mezo designed the fix, RFC-2 microloans, but never shipped it.",
+          "start": 0.3,
+          "seconds": 4.233770833333334
+        },
+        {
+          "file": "audio/rfc-2.wav",
+          "text": "So we built it. Microtrove.",
+          "start": 4.833770833333333,
+          "seconds": 2.5275208333333334
+        }
+      ]
+    },
+    {
+      "id": "borrow",
+      "start": 21.46666666666667,
+      "seconds": 18.433333333333334,
+      "frames": 553,
+      "lines": [
+        {
+          "file": "audio/borrow-1.wav",
+          "text": "Borrow 25 to 200 MUSD against as little as $50 of bitcoin, at a fixed 5%.",
+          "start": 0.5,
+          "seconds": 7.479979166666666
+        },
+        {
+          "file": "audio/borrow-2.wav",
+          "text": "Pick an amount and a ratio, and see exactly what you owe.",
+          "start": 8.279979166666667,
+          "seconds": 3.3599791666666667
+        },
+        {
+          "file": "audio/borrow-3.wav",
+          "text": "One transaction locks the BTC and sends the MUSD, live on Mezo Testnet.",
+          "start": 11.939958333333333,
+          "seconds": 5.679979166666667
+        }
+      ]
+    },
+    {
+      "id": "lenders",
+      "start": 39.900000000000006,
+      "seconds": 12.966666666666667,
+      "frames": 389,
+      "lines": [
+        {
+          "file": "audio/lenders-1.wav",
+          "text": "The MUSD comes from lenders, through a vault anyone can fund.",
+          "start": 0.4,
+          "seconds": 4.759979166666667
+        },
+        {
+          "file": "audio/lenders-2.wav",
+          "text": "They earn the interest and fees, and withdraw any time: instantly, or first in, first out.",
+          "start": 5.459979166666667,
+          "seconds": 6.679979166666667
+        }
+      ]
+    },
+    {
+      "id": "keepers",
+      "start": 52.866666666666674,
+      "seconds": 18.4,
+      "frames": 552,
+      "lines": [
+        {
+          "file": "audio/keepers-1.wav",
+          "text": "Keepers liquidate loans below 110% or past their due date.",
+          "start": 0.4,
+          "seconds": 4.239979166666667
+        },
+        {
+          "file": "audio/keepers-2.wav",
+          "text": "RFC-2 paid them 10% of the collateral: at most half the debt they repay. Nobody would.",
+          "start": 4.939979166666667,
+          "seconds": 6.919979166666667
+        },
+        {
+          "file": "audio/keepers-3.wav",
+          "text": "We pay BTC worth the debt plus 10%, and the borrower claims the rest.",
+          "start": 12.159958333333334,
+          "seconds": 5.439979166666666
+        }
+      ]
+    },
+    {
+      "id": "proof",
+      "start": 71.26666666666668,
+      "seconds": 13.9,
+      "frames": 417,
+      "lines": [
+        {
+          "file": "audio/proof-1.wav",
+          "text": "Then we proved it live. Our keeper bot liquidated a matured loan 48 seconds after its due date, for $3.98 profit and no bad debt.",
+          "start": 0.4,
+          "seconds": 9.319979166666666
+        },
+        {
+          "file": "audio/proof-2.wav",
+          "text": "The borrower claimed the leftover BTC in the app.",
+          "start": 10.019979166666667,
+          "seconds": 2.959979166666667
+        }
+      ]
+    },
+    {
+      "id": "promote",
+      "start": 85.16666666666669,
+      "seconds": 18.133333333333333,
+      "frames": 544,
+      "lines": [
+        {
+          "file": "audio/promote-1.wav",
+          "text": "When a borrower outgrows a micro trove, they sign MUSD’s own OpenTrove message.",
+          "start": 0.4,
+          "seconds": 5.119979166666667
+        },
+        {
+          "file": "audio/promote-2.wav",
+          "text": "One transaction opens a full MUSD trove, repays the micro loan and sends them the rest.",
+          "start": 5.819979166666667,
+          "seconds": 6.519979166666666
+        },
+        {
+          "file": "audio/promote-3.wav",
+          "text": "Microtrove feeds new troves into MUSD instead of competing with it.",
+          "start": 12.639958333333333,
+          "seconds": 4.679979166666667
+        }
+      ]
+    },
+    {
+      "id": "mezo",
+      "start": 103.30000000000001,
+      "seconds": 9.6,
+      "frames": 288,
+      "lines": [
+        {
+          "file": "audio/mezo-1.wav",
+          "text": "It runs on Mezo’s own contracts: MUSD, its PriceFeed, BorrowerOperations, HintHelpers and SortedTroves.",
+          "start": 0.3,
+          "seconds": 8.399979166666666
+        }
+      ]
+    },
+    {
+      "id": "shipped",
+      "start": 112.9,
+      "seconds": 9,
+      "frames": 270,
+      "lines": [
+        {
+          "file": "audio/shipped-1.wav",
+          "text": "53 Foundry tests, two verified contracts, a web app and a keeper bot. Live on testnet today.",
+          "start": 0.3,
+          "seconds": 7.879979166666667
+        }
+      ]
+    },
+    {
+      "id": "outro",
+      "start": 121.9,
+      "seconds": 7.866666666666666,
+      "frames": 236,
+      "lines": [
+        {
+          "file": "audio/outro-1.wav",
+          "text": "Microtrove. Start with $50 of bitcoin. Grow into MUSD.",
+          "start": 0.5,
+          "seconds": 5.159979166666667
+        }
+      ]
+    }
+  ]
+}

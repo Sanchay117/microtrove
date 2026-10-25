@@ -29,8 +29,8 @@ lifecycle has run on chain:
 | Close: repay the rest with interest, BTC returned | [`0xb823...66b1`](https://explorer.test.mezo.org/tx/0xb82399bfeb6a13e5dde6cdb823c318f5f9a09f5e64c28c5df2b3ac0d33da66b1) |
 
 An expiry liquidation has also run live. The term was set to 1 hour for one 40 MUSD
-borrow and then restored to 90 days. The [keeper bot](../keeper) liquidated the loan 36
-seconds after it matured, and the borrower claimed the rest of their BTC from the web app:
+borrow and then restored to 90 days. The [keeper bot](../keeper) liquidated the loan 48
+seconds after it matured (block time), and the borrower claimed the rest of their BTC from the web app:
 
 | Step | Transaction |
 | --- | --- |
