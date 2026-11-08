@@ -21,18 +21,21 @@ export const Borrow: React.FC = () => {
   const tSee = wordAt(S, 1, "see");
   const tLive = wordAt(S, 2, "live");
 
+  // The form cameras were framed when the collateral value row started 0.4961 down the frame; the timelock
+  // line and the guide link above the form move it lower now, so they follow it.
+  const dy = box("value")[1] - 0.4961;
   const cams: Cam[] = [
     { t: 0, scale: 1, x: 0.5, y: 0.5 },
     { t: 2.7, scale: 1, x: 0.5, y: 0.5 },
-    { t: 3.4, scale: 1.3, x: 0.3, y: 0.42 },
-    { t: tFifty - 0.3, scale: 1.3, x: 0.66, y: 0.45 },
+    { t: 3.4, scale: 1.3, x: 0.3, y: 0.42 + dy },
+    { t: tFifty - 0.3, scale: 1.3, x: 0.66, y: 0.45 + dy },
     { t: tRate - 0.5, scale: 1.3, x: 0.2, y: 0.12 },
     { t: l1.start + 0.4, scale: 1.3, x: 0.2, y: 0.12 },
-    { t: l1.start + 1.0, scale: 1.25, x: 0.36, y: 0.52 },
-    { t: tSee, scale: 1.3, x: 0.7, y: 0.72 },
-    { t: l2.start - 0.3, scale: 1.3, x: 0.7, y: 0.72 },
-    { t: l2.start + 0.3, scale: 1.2, x: 0.3, y: 0.6 },
-    { t: cut, scale: 1.2, x: 0.3, y: 0.6 },
+    { t: l1.start + 1.0, scale: 1.25, x: 0.36, y: 0.52 + dy },
+    { t: tSee, scale: 1.3, x: 0.7, y: 0.72 + dy },
+    { t: l2.start - 0.3, scale: 1.3, x: 0.7, y: 0.72 + dy },
+    { t: l2.start + 0.3, scale: 1.2, x: 0.3, y: 0.6 + dy },
+    { t: cut, scale: 1.2, x: 0.3, y: 0.6 + dy },
     { t: cut + 1 / 30, scale: 1.0, x: 0.5, y: 0.45 },
     { t: tLive - 0.6, scale: 1.08, x: 0.5, y: 0.42 },
   ];

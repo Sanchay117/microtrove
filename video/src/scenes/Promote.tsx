@@ -4,7 +4,7 @@ import { Kicker } from "../components/Chrome";
 import { Footage, Spotlight } from "../components/Footage";
 import { Sfx } from "../components/Sfx";
 import { Words } from "../components/Type";
-import { clips, lineAt, wordAt } from "../data";
+import { clips, FACTS, lineAt, short, wordAt } from "../data";
 import { C, FPS, mono, sans } from "../theme";
 
 const S = "promote";
@@ -13,7 +13,7 @@ const S = "promote";
 const TYPED = [
   "domain    BorrowerOperationsSignatures · v1 · 31611",
   "OpenTrove {",
-  "  assetAmount  0.039771 BTC",
+  "  assetAmount  0.0423 BTC",
   "  debtAmount   1,800 MUSD",
   "  borrower     0x9A66…Fb9e",
   "  recipient    Microtroves",
@@ -23,18 +23,20 @@ const TYPED = [
 ];
 const SIG = "0x7c4e1f09b2d8a3c65e0f4a71d93b28c6f05e7a1d4b9c2e83f6a05d17c9e2b4f8a1";
 
-/** Signing MUSD's own OpenTrove message, the real promotion card, then micro troves feeding MUSD. */
+/** Signing MUSD's own OpenTrove message, the real promotion card, the live run, then micro troves feeding MUSD. */
 export const Promote: React.FC = () => {
   const frame = useCurrentFrame();
   const l1 = lineAt(S, 1);
   const l2 = lineAt(S, 2);
+  const l3 = lineAt(S, 3);
   const from = l1.start - 0.3; // footage window, matches PROMOTE_FROM in scripts/capture.ts
   const tOutgrows = wordAt(S, 0, "outgrows");
   const tSign = wordAt(S, 0, "sign");
   const tMessage = wordAt(S, 0, "message");
 
   const partA = 1 - ramp(frame, from - 0.3, 0.35);
-  const partC = ramp(frame, l2.start - 0.15, 0.4);
+  const partL = ramp(frame, l2.start - 0.15, 0.4) * (1 - ramp(frame, l3.start - 0.35, 0.35));
+  const partC = ramp(frame, l3.start - 0.15, 0.4);
   const grow = pop(frame, tOutgrows - 0.1, 10);
   const card = ramp(frame, tSign - 0.4, 0.4);
 
@@ -42,7 +44,7 @@ export const Promote: React.FC = () => {
     <AbsoluteFill style={{ background: C.paper, fontFamily: sans }}>
       {/* A: the borrower outgrows the micro trove and signs. */}
       <AbsoluteFill style={{ opacity: partA }}>
-        <Kicker index="07" label="Promotion" style={{ position: "absolute", left: 160, top: 140, opacity: ramp(frame, 0.1, 0.4) }} />
+        <Kicker index="08" label="Promotion" style={{ position: "absolute", left: 160, top: 140, opacity: ramp(frame, 0.1, 0.4) }} />
         <Words
           words={[
             ["Grow", 0.4],
@@ -109,9 +111,14 @@ export const Promote: React.FC = () => {
         <PromoteFootage from={from} />
       </Sequence>
 
+      {/* L: it ran live on Mezo Testnet. */}
+      <AbsoluteFill style={{ opacity: partL }}>
+        <Live />
+      </AbsoluteFill>
+
       {/* C: every borrower who grows becomes an MUSD trove. */}
       <AbsoluteFill style={{ opacity: partC }}>
-        <Feed start={l2.start} />
+        <Feed start={l3.start} />
       </AbsoluteFill>
 
       <Sfx src="sfx/swell.wav" at={tOutgrows - 0.2} volume={0.3} />
@@ -142,12 +149,81 @@ const PromoteFootage: React.FC<{ from: number }> = ({ from }) => {
   );
 };
 
+/** The promotion that ran from the web app on Mezo Testnet (deployments/mezo-testnet.json). */
+const Live: React.FC = () => {
+  const frame = useCurrentFrame();
+  const w = (word: string, nth = 0) => wordAt(S, 2, word, nth);
+  const steps = [
+    { big: "100", unit: "MUSD", text: "micro loan, repaid", at: w("100") - 0.1 },
+    { big: "1,800", unit: "MUSD", text: "debt in a new MUSD trove", at: w("1,800") - 0.1 },
+    { big: "1,699.50", unit: "MUSD", text: "sent to the borrower", at: w("debt") + 0.1 },
+  ];
+  const tx = ramp(frame, w("debt") + 0.4, 0.4);
+  return (
+    <>
+      <Kicker index="08" label="Promotion · live on Mezo Testnet" style={{ position: "absolute", left: 160, top: 140 }} />
+      <Words
+        words={[
+          ["We", w("we")],
+          ["ran", w("ran")],
+          ["it", w("it")],
+          ["live.", w("live")],
+        ]}
+        size={96}
+        color={C.ink}
+        accent={{ 3: C.blue }}
+        style={{ position: "absolute", left: 160, top: 196 }}
+      />
+      <div style={{ position: "absolute", left: 160, top: 420, width: 1600, display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 40 }}>
+        {steps.map((s) => {
+          const u = Math.min(1, pop(frame, s.at));
+          return (
+            <div key={s.big} style={{ borderTop: `3px solid ${C.ink}`, paddingTop: 18, opacity: u, transform: `translateY(${(1 - u) * 30}px)` }}>
+              <div style={{ fontSize: 120, fontWeight: 600, letterSpacing: -5, lineHeight: 1, color: C.blue }}>
+                {s.big}
+                <span style={{ fontSize: 40, letterSpacing: 0, color: C.ink2, marginLeft: 12 }}>{s.unit}</span>
+              </div>
+              <div style={{ fontSize: 30, color: C.ink2, marginTop: 14 }}>{s.text}</div>
+            </div>
+          );
+        })}
+      </div>
+      <div
+        style={{
+          position: "absolute",
+          left: 160,
+          top: 720,
+          width: 1600,
+          height: 80,
+          background: C.ink,
+          color: C.paper,
+          display: "flex",
+          alignItems: "center",
+          gap: 26,
+          padding: "0 30px",
+          fontFamily: mono,
+          fontSize: 24,
+          opacity: tx,
+          transform: `translateY(${(1 - tx) * 16}px)`,
+        }}
+      >
+        <span style={{ width: 16, height: 16, background: C.blueOnDark }} />
+        <span>ONE TRANSACTION</span>
+        <span style={{ color: C.onDark }}>openTroveWithSignature · new trove holds 0.0423 BTC · tx {short(FACTS.promotionTx)}</span>
+      </div>
+      {steps.map((s) => (
+        <Sfx key={s.big} src="sfx/pop.wav" at={s.at} volume={0.35} />
+      ))}
+    </>
+  );
+};
+
 // Micro troves stream in from the left and land in the MUSD trove set on the right.
 const POOL = { x: 1180, y: 380, size: 520 };
 const Feed: React.FC<{ start: number }> = ({ start }) => {
   const frame = useCurrentFrame();
-  const tName = wordAt(S, 2, "Microtrove");
-  const tInstead = wordAt(S, 2, "instead");
+  const tName = wordAt(S, 3, "Microtrove");
+  const tInstead = wordAt(S, 3, "instead");
   const n = 16;
   const cols = 4;
   const cell = POOL.size / cols;
@@ -170,7 +246,7 @@ const Feed: React.FC<{ start: number }> = ({ start }) => {
   }
   return (
     <>
-      <Kicker index="07" label="Promotion" style={{ position: "absolute", left: 160, top: 140 }} />
+      <Kicker index="08" label="Promotion" style={{ position: "absolute", left: 160, top: 140 }} />
       <Words
         words={[
           ["An", tName - 0.1],

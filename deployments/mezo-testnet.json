@@ -20,6 +20,24 @@
     "protocolFeeBps": 1000
   },
   "feeRecipient": "0xaFE2D4f0a5064c006Efd64774ABee42D26790779",
+  "governance": {
+    "TimelockController": "0xD3B072154FE07F302Ec173C7D9d0cAB6089d764a",
+    "delaySeconds": 86400,
+    "proposer": "0xaFE2D4f0a5064c006Efd64774ABee42D26790779",
+    "executor": "anyone, once an operation is ready",
+    "deployBlock": 16656907,
+    "note": "Owns the loan book and the vault. Every owner action is public on chain for 24 hours before it can apply."
+  },
+  "passport": {
+    "note": "Bitcoin wallets connect through Mezo Passport (OrangeKit 1.0.0-beta.40). Each gets a Safe smart account on Mezo, controlled by Bitcoin message signatures; Mezo's relayer submits its transactions and takes gas in BTC from the Safe. Tested with a scripted Unisat-compatible wallet holding a throwaway testnet key.",
+    "relayer": "https://testnet.mezo.org/api/v2/relay/",
+    "relayerSender": "0x6e80164ea60673D64d5d6228beb684a1274Bb017",
+    "safeFactory": "0x7E80bd5A2E8Fca0B160254D43aC9f43AC2cC1052",
+    "testBitcoinAddress": "tb1q9k5xsw7lprxrl8ef9n82x3zx0f8lhtg2rq5nqh",
+    "testSmartAccount": "0x0d2A2B63a0237D6F058499908829Cf2ADBE725AC",
+    "limits": "MUSD permits and the promotion OpenTrove signature are EIP-712 typed data, which Passport's Bitcoin wallets cannot sign. Repay and close use an approval instead; promotion needs an EVM wallet.",
+    "videoSmartAccount": "0xdcF30369E21aB03f9f5DCeaB8DB24EdE96459d7c"
+  },
   "mezo": {
     "MUSD": "0x118917a40FAF1CD7a13dB0Ef56C86De7973Ac503",
     "PriceFeed": "0x86bCF0841622a5dAC14A313a15f96A95421b9366",
@@ -42,12 +60,26 @@
     "appCloseWithPermit": "0x109940c37e7003c5ed32c6b73d922c2364bb4f5054aa002820073c99cc858ba2",
     "appWithdraw20Musd": "0x011ec18af364a174fc32872f09c4dd947d36f04894ab644ba0b9ee700181f3ca",
     "appOpenBorrow100Musd": "0xac41edbd5183b92e1cf9f631d608712b08f1729a959f5460dcc0a5df79f4b08a",
-    "appPromoteTo1800MusdTrove": "0x9f1a1aae9d3d0106e48dddae8ef4bf22c4e48cebad975a48c9f05dae139b9642"
+    "appPromoteTo1800MusdTrove": "0x9f1a1aae9d3d0106e48dddae8ef4bf22c4e48cebad975a48c9f05dae139b9642",
+    "timelockDeploy": "0xd6b22255ff4fb11815bab7e8723e747dc531ead23e47141f07ca2f9946e4cf70",
+    "loanBookOwnershipToTimelock": "0x54adb547cd1c0b55317df3d654b6ce27831ae53819dd672c2927d296e42e07f1",
+    "vaultOwnershipToTimelock": "0x352e9d7eeb4ed4a5247a141c8f0125f831a7b2c8c5935e2e073aaebcf0c7604a",
+    "timelockScheduleHandover": "0xb397a86207314979c97e1703461242acdf46c635b0cb5ce59fa6db8280b50a98",
+    "timelockExecuteHandover": "0x21d507e6be67e8f9d3c7cfb8d97414209f43794e47e213345655691bd1224c93",
+    "passportFundSafeBtc": "0x9349106c8f30a20523ba80ab97aa0d1f89b9428aa677afe05cfb2258f53e8d97",
+    "passportFundSafeMusd": "0x3aac7387d2adf71f912bd88871f29116a75658c38ce63cea2ec7e48cc4217622",
+    "passportDeploySafe": "0xf29b4c0cbc347a5009d3fcac10f198ea92d38c1cdc5af37e95f36768aae129b2",
+    "passportOpenBorrow50Musd": "0x400e6369519f04f7b696642d8d18a62cdd328be1f06566651f2d929d4b06d769",
+    "passportApproveMusd": "0x3daeb01a65950b08b00fa65325cdb68d842b2566a19714659eb7afed79fd1945",
+    "passportClose": "0xa4c467ba1e44e318565de808929ca6631b92614be1b7ec3712a77ab11bc1b57c",
+    "videoBorrow25Musd": "0x8cd797b2255ef510cd298afe13cd3f299b5673aea299632ae48703ab783c7dae",
+    "videoPassportFundSafeBtc": "0xf0f5303ab6b7d158bd697ca0d03e6852cba83bade8790101ecdd92ddfae40c4f",
+    "videoPassportBorrow25Musd": "0x431e088364398d8ea7cbf81d077aefb064b7052b45e5db81383df264e14d6701"
   },
   "keeper": {
     "address": "0xc9Bea2900c81FB0148851Ec6e70E90B848288653"
   },
-  "verification": "Sourcify exact match for both contracts",
+  "verification": "Sourcify exact match for the loan book, the vault and the timelock",
   "wave1": {
     "note": "First deployment, retired in Wave 2 after review found that a redeem request paying the MUSD contract itself could freeze the withdrawal queue. All funds were withdrawn and the loan book paused.",
     "deployBlock": 16360581,

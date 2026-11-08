@@ -5,6 +5,7 @@ import { usePrice } from "../hooks/useProtocol";
 import { useAccountState } from "../hooks/useAccountState";
 import { fmtBtc, fmtMusd, fmtPrice, shortAddr } from "../lib/format";
 import { FAUCET, addressUrl } from "../config";
+import { BITCOIN_WALLETS, bitcoinAddressOf, type BitcoinWalletId } from "../bitcoin";
 
 export type Tab = "borrow" | "lend" | "keepers";
 
@@ -86,6 +87,16 @@ function WalletButton() {
   const { data } = useAccountState();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const [btcAddress, setBtcAddress] = useState<string>();
+
+  useEffect(() => {
+    let live = true;
+    setBtcAddress(undefined);
+    if (isConnected) bitcoinAddressOf(connector).then((a) => live && setBtcAddress(a));
+    return () => {
+      live = false;
+    };
+  }, [connector, isConnected, address]);
 
   useEffect(() => {
     const close = (e: MouseEvent) => {
@@ -125,12 +136,26 @@ function WalletButton() {
         <div className="menu">
           {isConnected && address ? (
             <>
-              <div className="menu-section">
-                <div className="menu-label">Connected with {connector?.name}</div>
-                <a className="menu-address" href={addressUrl(address)} target="_blank" rel="noreferrer">
-                  {shortAddr(address)}
-                </a>
-              </div>
+              {btcAddress ? (
+                <div className="menu-section">
+                  <div className="menu-label">Connected with {connector?.name} through Mezo Passport</div>
+                  <div className="menu-address" title={btcAddress}>{shortAddr(btcAddress)}</div>
+                  <div className="menu-label menu-label-gap">Your Mezo account</div>
+                  <a className="menu-address" href={addressUrl(address)} target="_blank" rel="noreferrer">
+                    {shortAddr(address)}
+                  </a>
+                  <p className="menu-note">
+                    A smart account your Bitcoin wallet controls. Send testnet BTC to it from the faucet, then borrow.
+                  </p>
+                </div>
+              ) : (
+                <div className="menu-section">
+                  <div className="menu-label">Connected with {connector?.name}</div>
+                  <a className="menu-address" href={addressUrl(address)} target="_blank" rel="noreferrer">
+                    {shortAddr(address)}
+                  </a>
+                </div>
+              )}
               <div className="menu-section menu-balances">
                 <div><span>BTC</span><strong>{fmtBtc(data?.btc)}</strong></div>
                 <div><span>MUSD</span><strong>{fmtMusd(data?.musd)}</strong></div>
@@ -175,14 +200,64 @@ function WalletButton() {
                   </span>
                 </a>
               )}
+              <BitcoinWalletOptions
+                connectors={connectors}
+                onPick={(c) => connect({ connector: c, chainId: mezoTestnet.id }, { onSuccess: () => setOpen(false) })}
+              />
               {error && <div className="menu-error">{error.message.split("\n")[0]}</div>}
               <div className="menu-foot">
-                Works with any EVM wallet. The app adds Mezo Testnet (chain 31611) for you.
+                Works with any EVM wallet, or a Bitcoin wallet through Mezo Passport. The app adds Mezo Testnet
+                (chain 31611) for you.
               </div>
             </>
           )}
         </div>
       )}
     </div>
+  );
+}
+
+/** Bitcoin wallets through Mezo Passport: connect if installed, otherwise link to the wallet. */
+function BitcoinWalletOptions({ connectors, onPick }: { connectors: readonly Connector[]; onPick: (c: Connector) => void }) {
+  const [icons, setIcons] = useState<Record<BitcoinWalletId, string>>();
+  useEffect(() => {
+    import("../bitcoinIcons").then((m) => setIcons(m.default)).catch(() => undefined);
+  }, []);
+
+  // Phones have no Bitcoin wallet extensions; list one only inside its own in-app browser.
+  const wallets = BITCOIN_WALLETS.filter((w) => !isPhone || w.detect());
+  if (wallets.length === 0) return null;
+
+  return (
+    <>
+      <div className="menu-label menu-group">Bitcoin wallets · Mezo Passport</div>
+      {wallets.map((w) => {
+        const connector = connectors.find((c) => c.id === w.id);
+        const icon = icons?.[w.id] ? (
+          <img className="wallet-icon" src={icons[w.id]} alt="" />
+        ) : (
+          <span className="wallet-icon wallet-icon-letter" aria-hidden>
+            {w.name[0]}
+          </span>
+        );
+        return w.detect() && connector ? (
+          <button key={w.id} className="menu-item wallet-option" onClick={() => onPick(connector)}>
+            {icon}
+            <span className="wallet-name">
+              {w.name}
+              <small>Sign with Bitcoin, borrow from a Mezo smart account</small>
+            </span>
+          </button>
+        ) : (
+          <a key={w.id} className="menu-item wallet-option" href={w.download} target="_blank" rel="noreferrer">
+            {icon}
+            <span className="wallet-name">
+              {w.name}
+              <small>Not installed. Get the extension</small>
+            </span>
+          </a>
+        );
+      })}
+    </>
   );
 }

@@ -1,6 +1,6 @@
 # Microtrove demo video
 
-The two-minute pitch video: motion graphics in [Remotion](https://www.remotion.dev), footage of the live app recorded with Playwright, and narration from Deepgram Aura-2. Sound effects and music are synthesized from code, so nothing needs a license.
+The pitch video (2:51 for Wave 2): motion graphics in [Remotion](https://www.remotion.dev), footage of the live app recorded with Playwright, and narration from Deepgram Aura-2. Sound effects and music are synthesized from code, so nothing needs a license.
 
 ## Pipeline
 
@@ -22,8 +22,12 @@ Steps 1, 2, 3 and 8 need `DEEPGRAM_API_KEY` in `video/.env` (git-ignored). The n
 
 `npm run capture borrow` opens a real 25 MUSD loan on Mezo Testnet from the dev burner wallet (`web/.env.development.local`), so the burner must have no open trove and about 0.001 BTC. The promote clip needs that loan open, since the promotion card only shows for an active micro trove. Times in the page advance exactly one frame per screenshot under Playwright's fake clock; while the transaction confirms, time runs without keeping frames, and the composition covers that cut with a flash.
 
-The keeper and claim scenes use the real log and transaction hashes from the expiry run described in [keeper/README.md](../keeper/README.md).
+`npm run capture passport` borrows 25 MUSD from a Bitcoin wallet through Mezo Passport. The wallet is [scripts/btc-wallet.js](scripts/btc-wallet.js), a scripted Unisat that signs Bitcoin messages with a throwaway testnet key kept in `build/passport-key` (git-ignored). Its smart account needs about 0.0015 BTC; the first run prints the address to fund and stops. The connect and the relayed borrow happen off camera, covered by flashes like the borrow scene's.
+
+The first-loan guide is hidden during capture so the footage frames the loan form.
+
+The keeper and claim scenes use the real log and transaction hashes from the expiry run described in [keeper/README.md](../keeper/README.md). They ran on the Wave 1 contracts; everything else on screen is the Wave 2 deployment.
 
 ## End card links
 
-`LINKS` in [src/data.ts](src/data.ts) holds the repository link; add the hosted app's once it is live and re-render (steps 6 and 7).
+`LINKS` and `FACTS` in [src/data.ts](src/data.ts) hold the links and addresses on the end card; re-render (steps 6 and 7) after changing them.

@@ -4,6 +4,7 @@ import { Borrow } from "./views/Borrow";
 import { Lend } from "./views/Lend";
 import { Keepers } from "./views/Keepers";
 import { addressUrl, addresses } from "./config";
+import { TIMELOCK } from "./hooks/useGovernance";
 
 const fromHash = (): Tab => {
   const h = window.location.hash.replace("#", "");
@@ -38,6 +39,7 @@ export function App() {
         <span className="footer-links">
           <a href={addressUrl(addresses.loans)} target="_blank" rel="noreferrer">Loan book</a>
           <a href={addressUrl(addresses.vault)} target="_blank" rel="noreferrer">Vault</a>
+          <a href={addressUrl(TIMELOCK)} target="_blank" rel="noreferrer">Timelock</a>
         </span>
       </footer>
     </>

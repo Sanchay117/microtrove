@@ -9,10 +9,12 @@ import { Lenders } from "./scenes/Lenders";
 import { Mezo } from "./scenes/Mezo";
 import { Open } from "./scenes/Open";
 import { Outro } from "./scenes/Outro";
+import { Passport } from "./scenes/Passport";
 import { Promote } from "./scenes/Promote";
 import { Proof } from "./scenes/Proof";
 import { Rfc } from "./scenes/Rfc";
 import { Shipped } from "./scenes/Shipped";
+import { Terms } from "./scenes/Terms";
 import { C, FPS } from "./theme";
 
 // `label` names the section in the header for scenes without a kicker of their own; `chrome: false` hides it.
@@ -23,7 +25,9 @@ const SCENES: Record<string, { comp: React.FC; label?: string; chrome?: false }>
   lenders: { comp: Lenders },
   keepers: { comp: Keepers },
   proof: { comp: Proof },
+  terms: { comp: Terms },
   promote: { comp: Promote },
+  passport: { comp: Passport, label: "Mezo Passport" },
   mezo: { comp: Mezo },
   shipped: { comp: Shipped },
   outro: { comp: Outro, chrome: false },
@@ -61,13 +65,13 @@ const Wipe: React.FC = () => {
   );
 };
 
-const Scene: React.FC<{ scene: TimedScene; index: number }> = ({ scene, index }) => {
+const Scene: React.FC<{ scene: TimedScene; index: number; captions: boolean }> = ({ scene, index, captions }) => {
   const { comp: Comp, label, chrome } = SCENES[scene.id];
   return (
     <>
       <Comp />
       {chrome !== false && <Chrome index={index + 1} total={timing.scenes.length - 1} label={label} />}
-      <Captions scene={scene} skip={NO_CAPTION} />
+      {captions && <Captions scene={scene} skip={NO_CAPTION} />}
       {scene.lines.map((l) => (
         <Sequence key={l.file} from={f(l.start)} layout="none">
           <Audio src={staticFile(l.file)} />
@@ -77,11 +81,12 @@ const Scene: React.FC<{ scene: TimedScene; index: number }> = ({ scene, index })
   );
 };
 
-export const Video: React.FC = () => (
+/** `captions: false` renders clean stills for the gallery (scripts/gallery.ts). */
+export const Video: React.FC<{ captions?: boolean }> = ({ captions = true }) => (
   <AbsoluteFill style={{ background: C.paper }}>
     {timing.scenes.map((s, i) => (
       <Sequence key={s.id} from={STARTS[i]} durationInFrames={s.frames} name={s.id}>
-        <Scene scene={s} index={i} />
+        <Scene scene={s} index={i} captions={captions} />
       </Sequence>
     ))}
     {STARTS.slice(1).map((st) => (

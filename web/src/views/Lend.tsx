@@ -8,6 +8,7 @@ import { AmountInput, Card, Kicker, Notice, Row, Segmented, Stat } from "../comp
 import { ONE } from "../lib/math";
 import { fmtBps, fmtMusd, parseAmount, toInput } from "../lib/format";
 import { VaultHistory } from "./VaultHistory";
+import { Governance } from "../components/Governance";
 
 type Mode = "deposit" | "withdraw";
 
@@ -95,6 +96,8 @@ export function Lend() {
           </div>
         </div>
       </div>
+
+      <Governance params={protocol.params} audience="lend" />
 
       <div className="grid-2">
         <Card index="2.1" title="Your deposit">

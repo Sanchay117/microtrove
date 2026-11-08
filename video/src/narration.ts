@@ -92,6 +92,21 @@ export const SCRIPT: SceneScript[] = [
     ],
   },
   {
+    id: "terms",
+    lead: 0.4,
+    tail: 0.8,
+    lines: [
+      {
+        text: "Wave 1’s review found the owner could change loan terms at once.",
+        say: "Wave one’s review found that the owner could change loan terms at once.",
+      },
+      {
+        text: "Now a timelock owns both contracts. Every change waits 24 hours in public, and the app counts it down.",
+        say: "Now a timelock owns both contracts. Every change waits twenty-four hours in public, and the app counts it down.",
+      },
+    ],
+  },
+  {
     id: "promote",
     lead: 0.4,
     tail: 0.8,
@@ -104,7 +119,27 @@ export const SCRIPT: SceneScript[] = [
         text: "One transaction opens a full MUSD trove, repays the micro loan and sends them the rest.",
         say: "One transaction opens a full M.U.S.D. trove, repays the micro loan, and sends them the rest.",
       },
-      { text: "Microtrove feeds new troves into MUSD instead of competing with it.", say: "Microtrove feeds new troves into M.U.S.D, instead of competing with it." },
+      {
+        text: "We ran it live: a 100 MUSD loan became a full trove with 1,800 MUSD of debt.",
+        say: "We ran it live: a hundred M.U.S.D. loan became a full trove, with eighteen hundred M.U.S.D. of debt.",
+      },
+      { text: "Microtrove feeds new borrowers into MUSD instead of competing with it.", say: "Microtrove feeds new borrowers into M.U.S.D., instead of competing with it." },
+    ],
+  },
+  {
+    id: "passport",
+    lead: 0.4,
+    tail: 0.9,
+    lines: [
+      { text: "And Bitcoin wallets can borrow now, through Mezo Passport." },
+      {
+        text: "Unisat signs a Bitcoin message, a smart account on Mezo opens the loan, and Mezo’s relayer sends it.",
+        say: "Unisat signs a bitcoin message, a smart account on Mezo opens the loan, and Mezo’s relayer sends it.",
+      },
+      {
+        text: "Gas fees come out of the account’s BTC, so there is no EVM wallet to set up.",
+        say: "Gas fees come out of the account’s bitcoin, so there is no E.V.M. wallet to set up.",
+      },
     ],
   },
   {
@@ -113,8 +148,8 @@ export const SCRIPT: SceneScript[] = [
     tail: 0.9,
     lines: [
       {
-        text: "It runs on Mezo’s own contracts: MUSD, its PriceFeed, BorrowerOperations, HintHelpers and SortedTroves.",
-        say: "It runs on Mezo’s own contracts: M.U.S.D., its Price Feed, Borrower Operations, Hint Helpers, and Sorted Troves.",
+        text: "It runs on Mezo’s own pieces: MUSD, its PriceFeed, BorrowerOperations, HintHelpers, TroveManager and Passport.",
+        say: "It runs on Mezo’s own pieces: M.U.S.D., its Price Feed, Borrower Operations, Hint Helpers, Trove Manager, and Passport.",
       },
     ],
   },
@@ -124,8 +159,8 @@ export const SCRIPT: SceneScript[] = [
     tail: 0.8,
     lines: [
       {
-        text: "53 Foundry tests, two verified contracts, a web app and a keeper bot. Live on testnet today.",
-        say: "Fifty-three Foundry tests, two verified contracts, a web app, and a keeper bot. Live on testnet today.",
+        text: "67 Foundry tests, six fork tests against Mezo, three verified contracts, and a keeper that runs every five minutes. Live on testnet today.",
+        say: "Sixty-seven Foundry tests, six fork tests against Mezo, three verified contracts, and a keeper that runs every five minutes. Live on testnet today.",
       },
     ],
   },

@@ -4,17 +4,21 @@
 // the real mouse events go. While a transaction confirms, time keeps moving but no frames are kept.
 //
 // The borrow scene sends a real transaction from the dev burner wallet (web/.env.development.local), so the
-// app must be running in dev mode and the burner must have no open trove.
+// app must be running in dev mode and the burner must have no open trove. The passport scene borrows from a
+// Bitcoin wallet through Mezo Passport: a scripted Unisat (scripts/btc-wallet.js) with a throwaway testnet key
+// kept in build/passport-key. Its smart account needs about 0.0015 BTC; the first run prints the address.
 //
 // Usage: node scripts/capture.ts [scene...]   (app at MICROTROVE_URL, default http://localhost:5195/)
 // Writes public/clips/<scene>.mp4 and public/clips/<scene>.json (sound cues, element boxes, tx hashes).
 
 import { spawnSync } from "node:child_process";
-import { mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { randomBytes } from "node:crypto";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { chromium, type Page } from "playwright";
 import { readTiming } from "./env.ts";
 
 const BASE = process.env.MICROTROVE_URL ?? "http://localhost:5195/";
+const RPC = "https://rpc.test.mezo.org";
 const W = 1600;
 const H = 900;
 const DSF = 1.5; // 2400×1350 frames, crisp when the composition zooms in
@@ -199,7 +203,31 @@ async function open(page: Page, hash: string, waitFor: string): Promise<void> {
 
 const borrowInput = "label.field:has-text('Borrow') input";
 
-const SCENES: Record<string, { frames: () => number; run: (rec: Recorder, page: Page) => Promise<void> }> = {
+/** The passport wallet's throwaway key: created once, kept in build/ (git-ignored), never printed. */
+function passportKey(): string {
+  const path = new URL("../build/passport-key", import.meta.url);
+  if (!existsSync(path)) {
+    mkdirSync(new URL("../build/", import.meta.url), { recursive: true });
+    writeFileSync(path, `0x${randomBytes(32).toString("hex")}`, { mode: 0o600 });
+  }
+  return readFileSync(path, "utf8").trim();
+}
+
+async function btcBalance(address: string): Promise<bigint> {
+  const r = await fetch(RPC, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "eth_getBalance", params: [address, "latest"] }),
+  });
+  return BigInt(((await r.json()) as { result: string }).result);
+}
+
+const PASSPORT_FUNDS = 1_200_000_000_000_000n; // 0.0012 BTC: a 25 MUSD loan at 200% plus relayer gas
+
+const SCENES: Record<
+  string,
+  { frames: () => number; prepare?: (page: Page) => Promise<void>; run: (rec: Recorder, page: Page) => Promise<void> }
+> = {
   borrow: {
     frames: () => scene("borrow").frames,
     async run(rec, page) {
@@ -283,6 +311,102 @@ const SCENES: Record<string, { frames: () => number; run: (rec: Recorder, page: 
     },
   },
 
+  // A Bitcoin wallet connects through Mezo Passport and borrows 25 MUSD from its smart account, for real.
+  passport: {
+    frames: () => scene("passport").frames,
+    async prepare(page) {
+      const wallet = readFileSync(new URL("./btc-wallet.js", import.meta.url), "utf8").replaceAll("__BASE__", BASE);
+      await page.evaluate(
+        async ([key, code]) => {
+          localStorage.setItem("microtrove.btc-video-key", key);
+          await import(URL.createObjectURL(new Blob([code], { type: "text/javascript" })));
+        },
+        [passportKey(), wallet],
+      );
+      // Off camera: swap the dev burner for the Bitcoin wallet once, which loads Mezo Passport and finds the
+      // smart account, then disconnect so the footage starts from "Connect wallet".
+      await page.locator(".wallet-btn").click();
+      await page.locator(".menu button.menu-item:has-text('Disconnect')").click();
+      await page.locator("button:has-text('Connect wallet')").click();
+      await page.locator("button.wallet-option:has-text('Unisat')").click();
+      await page.locator(".wallet-btn").waitFor({ timeout: 120_000 });
+      await page.locator(".wallet-btn").click();
+      const href = await page.locator(".menu a.menu-address").getAttribute("href");
+      const account = href!.split("/address/")[1];
+      const balance = await btcBalance(account);
+      if (balance < PASSPORT_FUNDS) {
+        console.log(`  passport: send 0.0015 BTC to the smart account ${account}, then run this again`);
+        process.exit(2);
+      }
+      await page.locator(".menu button.menu-item:has-text('Disconnect')").click();
+      await page.locator("button:has-text('Connect wallet')").waitFor();
+      await page.locator(borrowInput).fill("25");
+      await page.evaluate(() => window.scrollTo(0, 430));
+    },
+    async run(rec, page) {
+      const words = (await import("../src/generated/words.json", { with: { type: "json" } })).default as Record<string, { w: string; start: number }[]>;
+      const at = (line: number, word: string) =>
+        lineStart("passport", line) + words[`passport-${line + 1}`].find((x) => x.w.toLowerCase().startsWith(word))!.start;
+      await rec.installCursor();
+      rec.x = W * 0.62;
+      rec.y = H * 0.5;
+      await rec.hold(0.3);
+      // "And Bitcoin wallets can borrow now, through Mezo Passport."
+      const [cx, cy] = await rec.center("button:has-text('Connect wallet')");
+      await rec.moveTo(cx, cy, 0.55);
+      await rec.until(at(0, "bitcoin"));
+      await rec.click();
+      await rec.hold(0.2);
+      await page.evaluate(() => {
+        // The dev-only burner option is not part of the product.
+        for (const el of document.querySelectorAll<HTMLElement>(".menu .wallet-option")) if (el.textContent?.includes("Dev burner")) el.style.display = "none";
+      });
+      await rec.hold(0.1);
+      await rec.mark("group", ".menu .menu-group", ".menu .wallet-option:has-text('Xverse')");
+      await rec.mark("unisat", ".menu button.wallet-option:has-text('Unisat')");
+      const [ux, uy] = await rec.center(".menu button.wallet-option:has-text('Unisat')", -60);
+      await rec.until(at(0, "through") - 0.5);
+      await rec.moveTo(ux, uy, 0.7);
+      // "Unisat signs a Bitcoin message": connect, then show the wallet and its smart account.
+      await rec.until(lineStart("passport", 1));
+      await rec.click();
+      const connected = await rec.waitOffCamera(".wallet-btn");
+      console.log(`  passport connected after ${connected.toFixed(1)}s off camera`);
+      const [wx, wy] = await rec.center(".wallet-btn");
+      await rec.moveTo(wx, wy, 0.35);
+      await rec.click();
+      await rec.hold(0.15);
+      await rec.mark("btc", ".menu .menu-section >> nth=0");
+      await rec.mark("account", ".menu a.menu-address", ".menu .menu-note");
+      await rec.moveTo(wx - 40, wy + 150, 0.5);
+      // "a smart account on Mezo opens the loan"
+      await rec.until(at(1, "opens") - 0.75);
+      await rec.moveTo(wx, wy, 0.3);
+      await rec.click();
+      const [bx, by] = await rec.center("button.btn-lg");
+      await rec.moveTo(bx, by, 0.4);
+      await rec.mark("button", "button.btn-lg");
+      await rec.until(at(1, "opens"));
+      await rec.click();
+      await rec.hold(0.3);
+      const waited = await rec.waitOffCamera("text=Your micro trove", 300_000);
+      console.log(`  passport borrow confirmed after ${waited.toFixed(1)}s off camera`);
+      const tx = await page.locator(".toast a").last().getAttribute("href");
+      if (tx) rec.meta.tx = tx.split("/tx/")[1];
+      await rec.mark("trove", ".card:has-text('Your micro trove')");
+      await rec.mark("toast", ".toast >> nth=-1");
+      await rec.moveTo(W * 0.66, H * 0.42, 1.0);
+      // "Gas fees come out of the account's BTC": the smart account's balances.
+      await rec.until(lineStart("passport", 2) - 0.6);
+      await rec.moveTo(wx, wy, 0.5);
+      await rec.click();
+      await rec.hold(0.15);
+      await rec.mark("balances", ".menu .menu-balances");
+      await rec.moveTo(wx - 60, wy + 260, 0.6);
+      await rec.until(scene("passport").seconds);
+    },
+  },
+
   // Needs the open trove from the borrow scene: the promotion card only shows for an active micro trove.
   promote: {
     frames: () => Math.round((PROMOTE_TO - PROMOTE_FROM) * FPS),
@@ -338,11 +462,14 @@ for (const id of wanted) {
   rmSync(dir, { recursive: true, force: true });
   mkdirSync(dir, { recursive: true });
   const context = await browser.newContext({ viewport: { width: W, height: H }, deviceScaleFactor: DSF, colorScheme: "light" });
+  // The first-loan guide sits above the form; the footage frames the form itself.
+  await context.addInitScript(() => localStorage.setItem("microtrove:guide-hidden", "1"));
   const page = await context.newPage();
   // Real time until the app has loaded and the burner has reconnected, then time moves only with frames.
   await page.clock.install({ time: Date.now() });
   await open(page, id === "lend" ? "lend" : "borrow", id === "lend" ? "Lend MUSD to bitcoin" : "Borrow MUSD against");
   await page.waitForTimeout(2500);
+  await spec.prepare?.(page);
   await page.clock.pauseAt((await page.evaluate(() => Date.now())) + 200);
   const rec = new Recorder(page, dir);
   const t0 = Date.now();

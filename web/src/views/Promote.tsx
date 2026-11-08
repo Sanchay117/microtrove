@@ -9,6 +9,7 @@ import { AmountInput, Card, Notice, Row } from "../components/ui";
 import { ONE, collateralFor, collateralValue, icr } from "../lib/math";
 import { fmtBtc, fmtMusd, fmtRatio, fmtUsd, parseAmount, toInput } from "../lib/format";
 import { GAS_RESERVE } from "../lib/loan";
+import { BITCOIN_CONNECTOR_TYPE } from "../bitcoin";
 
 const MUSD_CCR = 15n * 10n ** 17n;
 const NICR_PRECISION = 10n ** 20n;
@@ -28,7 +29,8 @@ const openTroveTypes = {
 
 /** Moves the micro trove into a full MUSD trove in one transaction (RFC-2 promotion). */
 export function Promote({ trove, price }: { trove: Trove; price: bigint }) {
-  const { address } = useAccount();
+  const { address, connector } = useAccount();
+  const bitcoinWallet = connector?.type === BITCOIN_CONNECTOR_TYPE;
   const { data: account } = useAccountState();
   const client = usePublicClient();
   const { signTypedDataAsync } = useSignTypedData();
@@ -144,8 +146,14 @@ export function Promote({ trove, price }: { trove: Trove; price: bigint }) {
         <Row label="Micro loan repaid" value={`${fmtMusd(trove.debt)} MUSD`} />
         <Row label="You receive" value={`${fmtMusd(youGet)} MUSD`} />
         {recoveryMode && <Notice tone="warn">MUSD is in recovery mode, so new troves need 150% and pay no fee.</Notice>}
-        <button className="btn btn-secondary btn-lg" disabled={!!error || busy} onClick={submit}>
-          {error ?? "Sign and promote"}
+        {bitcoinWallet && (
+          <Notice>
+            Promotion needs an EVM wallet for now. MUSD's <code>OpenTrove</code> message is EIP-712 typed data, and Mezo
+            Passport's Bitcoin wallets sign plain messages only. Repay and close work as usual.
+          </Notice>
+        )}
+        <button className="btn btn-secondary btn-lg" disabled={!!error || busy || bitcoinWallet} onClick={submit}>
+          {bitcoinWallet ? "Needs an EVM wallet" : error ?? "Sign and promote"}
         </button>
       </div>
     </Card>

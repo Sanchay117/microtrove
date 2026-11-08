@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useWriteContract } from "wagmi";
 import { loans, type Params } from "../hooks/useProtocol";
-import { usePayLoanBook } from "../lib/permit";
+import { usePayLoanBook, useSignsPermits } from "../lib/permit";
 import { useAccountState, type Trove } from "../hooks/useAccountState";
 import { useNow } from "../hooks/useNow";
 import { useTx } from "../tx";
@@ -130,6 +130,7 @@ function RepayForm({ trove, params, price }: { trove: Trove; params: Params; pri
   const { run, busy } = useTx();
   const { writeContractAsync } = useWriteContract();
   const pay = usePayLoanBook();
+  const signsPermits = useSignsPermits();
   const [input, setInput] = useState("");
   const musd = account?.musd ?? 0n;
   const amount = parseAmount(input) ?? 0n;
@@ -170,8 +171,10 @@ function RepayForm({ trove, params, price }: { trove: Trove; params: Params; pri
         after={left === 0n ? "No debt" : fmtRatio(icr(trove.collateral, left, price))}
       />
       <p className="fine">
-        Interest is paid first. Repaying everything keeps the trove open with your BTC in it. You sign an MUSD permit
-        instead of sending a separate approval.
+        Interest is paid first. Repaying everything keeps the trove open with your BTC in it.{" "}
+        {signsPermits
+          ? "You sign an MUSD permit instead of sending a separate approval."
+          : "Your wallet approves the MUSD first, then repays."}
       </p>
       <button className="btn btn-primary btn-lg" disabled={!!error || busy} onClick={submit}>
         {error ?? `Repay ${fmtMusd(amount)} MUSD`}
@@ -331,6 +334,7 @@ function CloseForm({ trove }: { trove: Trove }) {
   const { run, busy } = useTx();
   const { writeContractAsync } = useWriteContract();
   const pay = usePayLoanBook();
+  const signsPermits = useSignsPermits();
   const musd = account?.musd ?? 0n;
   // Covers the interest that accrues before the transaction lands; close takes only the exact debt.
   const maxRepay = minBig(debtWithBuffer(trove), maxBig(musd, trove.debt));
@@ -354,8 +358,10 @@ function CloseForm({ trove }: { trove: Trove }) {
       <Row label="You get back" value={`${fmtBtc(trove.collateral)} BTC`} />
       <Row label="MUSD in wallet" value={fmtMusd(musd)} tone={error ? "bad" : undefined} />
       <p className="fine">
-        One click: you sign an MUSD permit, then one transaction repays everything and returns your BTC. Closing never
-        reads the price oracle, so you can always exit.
+        {signsPermits
+          ? "One click: you sign an MUSD permit, then one transaction repays everything and returns your BTC."
+          : "One click: your wallet approves the MUSD, then one transaction repays everything and returns your BTC."}{" "}
+        Closing never reads the price oracle, so you can always exit.
       </p>
       <button className="btn btn-primary btn-lg" disabled={!!error || busy} onClick={submit}>
         {error ?? "Repay and close"}

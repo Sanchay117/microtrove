@@ -14,11 +14,13 @@ the position into a full MUSD trove in one transaction.
 | --- | --- |
 | `MicrotroveVault` | [`0x11fc55CD01411bd1453EE62b40cB4e653f7726eA`](https://explorer.test.mezo.org/address/0x11fc55CD01411bd1453EE62b40cB4e653f7726eA) |
 | `Microtroves` | [`0xE0e2155f9C5a5B55eADf952d0a01d3E691092dcf`](https://explorer.test.mezo.org/address/0xE0e2155f9C5a5B55eADf952d0a01d3E691092dcf) |
+| `TimelockController` (owner of both, 24-hour delay) | [`0xD3B072154FE07F302Ec173C7D9d0cAB6089d764a`](https://explorer.test.mezo.org/address/0xD3B072154FE07F302Ec173C7D9d0cAB6089d764a) |
 
-Both are verified on Sourcify with an exact match
+All three are verified on Sourcify with an exact match
 ([vault](https://repo.sourcify.dev/31611/0x11fc55CD01411bd1453EE62b40cB4e653f7726eA),
-[loan book](https://repo.sourcify.dev/31611/0xE0e2155f9C5a5B55eADf952d0a01d3E691092dcf)),
-deployed against the live MUSD contracts with a 10% protocol share of interest, and seeded
+[loan book](https://repo.sourcify.dev/31611/0xE0e2155f9C5a5B55eADf952d0a01d3E691092dcf),
+[timelock](https://repo.sourcify.dev/31611/0xD3B072154FE07F302Ec173C7D9d0cAB6089d764a)).
+The loan book and vault were deployed against the live MUSD contracts with a 10% protocol share of interest, and seeded
 with 1,500 MUSD borrowed from a real MUSD trove
 ([deposit](https://explorer.test.mezo.org/tx/0x187fee61529432e793c42d773931f3a02e04ed77e5449e6cc5f6e82d3afe6765)).
 
@@ -33,6 +35,17 @@ These ran on the Wave 2 contracts from the web app:
 | Lender withdraws 20 MUSD | [`0x011e...f3ca`](https://explorer.test.mezo.org/tx/0x011ec18af364a174fc32872f09c4dd947d36f04894ab644ba0b9ee700181f3ca) |
 | Borrow 100 MUSD | [`0xac41...b08a`](https://explorer.test.mezo.org/tx/0xac41edbd5183b92e1cf9f631d608712b08f1729a959f5460dcc0a5df79f4b08a) |
 | Promote it: a signed `OpenTrove` opens a full MUSD trove with 1,800 MUSD of debt and 0.0423 BTC, repays the 100.50 MUSD micro loan and sends the borrower 1,699.50 MUSD | [`0x9f1a...9642`](https://explorer.test.mezo.org/tx/0x9f1a1aae9d3d0106e48dddae8ef4bf22c4e48cebad975a48c9f05dae139b9642) |
+| Hand both contracts to the timelock and set its delay to 24 hours, in one scheduled batch | [`0x21d5...4c93`](https://explorer.test.mezo.org/tx/0x21d507e6be67e8f9d3c7cfb8d97414209f43794e47e213345655691bd1224c93) |
+
+A Bitcoin wallet ran a loan through Mezo Passport. It signs Bitcoin messages; a Safe smart
+account on Mezo acts for it, and Mezo's relayer sends each transaction:
+
+| Step | Transaction |
+| --- | --- |
+| Relayer creates the wallet's smart account | [`0xf29b...29b2`](https://explorer.test.mezo.org/tx/0xf29b4c0cbc347a5009d3fcac10f198ea92d38c1cdc5af37e95f36768aae129b2) |
+| Borrow 50 MUSD | [`0x400e...d769`](https://explorer.test.mezo.org/tx/0x400e6369519f04f7b696642d8d18a62cdd328be1f06566651f2d929d4b06d769) |
+| Approve MUSD (smart accounts cannot sign MUSD permits) | [`0x3dae...1945`](https://explorer.test.mezo.org/tx/0x3daeb01a65950b08b00fa65325cdb68d842b2566a19714659eb7afed79fd1945) |
+| Repay and close, BTC returned to the smart account | [`0xa4c4...b57c`](https://explorer.test.mezo.org/tx/0xa4c467ba1e44e318565de808929ca6631b92614be1b7ec3712a77ab11bc1b57c) |
 
 This is the Wave 2 deployment. The Wave 1 contracts
 ([vault](https://explorer.test.mezo.org/address/0xE128f5F21Adac4a11A22B55Da77bfdb6ab1304e2),
@@ -129,6 +142,23 @@ collateral ratio.
 - Pausing stops new debt only; repay, close, withdraw and liquidate keep working.
 - Every external entry point is `nonReentrant`; BTC is sent last.
 
+### Governance
+
+Both contracts are `Ownable2Step`, and their owner is an OpenZeppelin `TimelockController`
+with a 24-hour delay. `script/Timelock.s.sol` deployed it and handed over ownership in one
+scheduled batch (accept ownership of the loan book, accept ownership of the vault, set the
+delay), so the timelock administers itself and no admin account can skip the delay.
+
+- The operator can only propose or cancel. A proposal can run once its 24 hours have
+  passed, and anyone can run it then.
+- `setParams`, `setFeeRecipient`, `pause` and ownership changes all wait the full delay, and
+  so does a change to the delay itself.
+- The web app reads the timelock's scheduled operations, decodes them ("minimum collateral
+  from 110% to 150%") and shows each one on the Borrow and Lend pages with a countdown, so a
+  borrower has a day to add collateral or repay.
+- The trade-off: an emergency pause also waits 24 hours. Repay, close, withdraw and
+  liquidate never depended on the owner, so borrowers and lenders can always leave.
+
 ## Tests
 
 ```bash
@@ -136,8 +166,9 @@ git submodule update --init --recursive   # once, from the repository root
 forge test
 ```
 
-59 tests: unit tests for every borrower, lender, keeper and governance path, fuzz
-tests, promotion tests that sign real EIP-712 messages against a mock that reproduces
+67 tests: unit tests for every borrower, lender, keeper and governance path, eight timelock
+tests (the delay holds, only the operator proposes, a borrower can add collateral before a
+stricter ratio takes effect), fuzz tests, promotion tests that sign real EIP-712 messages against a mock that reproduces
 `BorrowerOperationsSignatures`, and a stateful invariant suite (64 runs x 400 calls)
 checking that BTC, principal, interest, protocol fees and vault assets always reconcile
 and that the queue only ever moves past closed requests. The invariant handler sends one
@@ -180,6 +211,13 @@ forge script script/Deploy.s.sol --rpc-url mezo_testnet --broadcast
 
 Set `TERM_SECONDS` for a short-term demo deployment and `SEED_MUSD` to fund the vault
 from the deployer.
+
+Then hand both contracts to a timelock. `TIMELOCK_DELAY` defaults to one day, and `LOANS`
+and `VAULT` default to the live addresses:
+
+```bash
+forge script script/Timelock.s.sol --rpc-url mezo_testnet --broadcast --slow
+```
 
 The testnet RPC sometimes returns a null receipt right after a send even though the
 transaction lands. Check with `cast receipt <hash>` before resending. The explorer's own

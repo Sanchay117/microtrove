@@ -952,6 +952,180 @@
    "end": 2.8799999
   }
  ],
+ "terms-1": [
+  {
+   "w": "Wave",
+   "start": 0.16,
+   "end": 0.48
+  },
+  {
+   "w": "one's",
+   "start": 0.48,
+   "end": 0.79999995
+  },
+  {
+   "w": "review",
+   "start": 0.79999995,
+   "end": 1.12
+  },
+  {
+   "w": "found",
+   "start": 1.12,
+   "end": 1.36
+  },
+  {
+   "w": "that",
+   "start": 1.36,
+   "end": 1.52
+  },
+  {
+   "w": "the",
+   "start": 1.52,
+   "end": 1.68
+  },
+  {
+   "w": "owner",
+   "start": 1.68,
+   "end": 2
+  },
+  {
+   "w": "could",
+   "start": 2,
+   "end": 2.24
+  },
+  {
+   "w": "change",
+   "start": 2.24,
+   "end": 2.48
+  },
+  {
+   "w": "loan",
+   "start": 2.48,
+   "end": 2.8
+  },
+  {
+   "w": "terms",
+   "start": 2.8,
+   "end": 3.04
+  },
+  {
+   "w": "at",
+   "start": 3.04,
+   "end": 3.28
+  },
+  {
+   "w": "once.",
+   "start": 3.28,
+   "end": 3.6
+  }
+ ],
+ "terms-2": [
+  {
+   "w": "Now",
+   "start": 0,
+   "end": 0.48
+  },
+  {
+   "w": "a",
+   "start": 0.48,
+   "end": 0.71999997
+  },
+  {
+   "w": "time",
+   "start": 0.71999997,
+   "end": 0.96
+  },
+  {
+   "w": "lock",
+   "start": 0.96,
+   "end": 1.1999999
+  },
+  {
+   "w": "owns",
+   "start": 1.1999999,
+   "end": 1.52
+  },
+  {
+   "w": "both",
+   "start": 1.52,
+   "end": 1.8399999
+  },
+  {
+   "w": "contracts.",
+   "start": 1.8399999,
+   "end": 2.7199998
+  },
+  {
+   "w": "Every",
+   "start": 3.12,
+   "end": 3.4399998
+  },
+  {
+   "w": "change",
+   "start": 3.4399998,
+   "end": 3.76
+  },
+  {
+   "w": "waits",
+   "start": 3.76,
+   "end": 4.08
+  },
+  {
+   "w": "twenty",
+   "start": 4.08,
+   "end": 4.4
+  },
+  {
+   "w": "four",
+   "start": 4.4,
+   "end": 4.64
+  },
+  {
+   "w": "hours",
+   "start": 4.64,
+   "end": 4.88
+  },
+  {
+   "w": "in",
+   "start": 4.88,
+   "end": 5.12
+  },
+  {
+   "w": "public,",
+   "start": 5.12,
+   "end": 5.8399997
+  },
+  {
+   "w": "and",
+   "start": 5.8399997,
+   "end": 6
+  },
+  {
+   "w": "the",
+   "start": 6,
+   "end": 6.16
+  },
+  {
+   "w": "app",
+   "start": 6.16,
+   "end": 6.3999996
+  },
+  {
+   "w": "counts",
+   "start": 6.3999996,
+   "end": 6.72
+  },
+  {
+   "w": "it",
+   "start": 6.72,
+   "end": 6.8799996
+  },
+  {
+   "w": "down.",
+   "start": 6.8799996,
+   "end": 7.12
+  }
+ ],
  "promote-1": [
   {
    "w": "When",
@@ -1098,57 +1272,370 @@
  ],
  "promote-3": [
   {
+   "w": "We",
+   "start": 0,
+   "end": 0.24
+  },
+  {
+   "w": "ran",
+   "start": 0.24,
+   "end": 0.56
+  },
+  {
+   "w": "it",
+   "start": 0.56,
+   "end": 0.71999997
+  },
+  {
+   "w": "live.",
+   "start": 0.71999997,
+   "end": 1.4399999
+  },
+  {
+   "w": "A",
+   "start": 1.4399999,
+   "end": 1.68
+  },
+  {
+   "w": "100",
+   "start": 1.68,
+   "end": 2
+  },
+  {
+   "w": "MUSD",
+   "start": 2,
+   "end": 2.72
+  },
+  {
+   "w": "loan",
+   "start": 2.72,
+   "end": 3.12
+  },
+  {
+   "w": "became",
+   "start": 3.12,
+   "end": 3.4399998
+  },
+  {
+   "w": "a",
+   "start": 3.4399998,
+   "end": 3.6
+  },
+  {
+   "w": "full",
+   "start": 3.6,
+   "end": 3.9199998
+  },
+  {
+   "w": "trove",
+   "start": 3.9199998,
+   "end": 4.4
+  },
+  {
+   "w": "with",
+   "start": 4.4,
+   "end": 4.72
+  },
+  {
+   "w": "1,800",
+   "start": 4.72,
+   "end": 5.44
+  },
+  {
+   "w": "MUSD",
+   "start": 5.44,
+   "end": 6.24
+  },
+  {
+   "w": "of",
+   "start": 6.24,
+   "end": 6.48
+  },
+  {
+   "w": "debt.",
+   "start": 6.48,
+   "end": 6.7999997
+  }
+ ],
+ "promote-4": [
+  {
    "w": "Microtrove",
-   "start": 0.08,
+   "start": 0,
    "end": 0.79999995
   },
   {
    "w": "feeds",
    "start": 0.79999995,
-   "end": 1.12
+   "end": 1.04
   },
   {
    "w": "new",
-   "start": 1.12,
-   "end": 1.4399999
+   "start": 1.04,
+   "end": 1.36
   },
   {
-   "w": "troves",
-   "start": 1.4399999,
-   "end": 1.8399999
+   "w": "borrowers",
+   "start": 1.36,
+   "end": 1.76
   },
   {
    "w": "into",
-   "start": 1.8399999,
+   "start": 1.76,
    "end": 2.1599998
   },
   {
    "w": "MUSD",
    "start": 2.1599998,
-   "end": 3.1999998
+   "end": 3.28
   },
   {
    "w": "instead",
-   "start": 3.1999998,
-   "end": 3.6799998
+   "start": 3.28,
+   "end": 3.76
   },
   {
    "w": "of",
-   "start": 3.6799998,
-   "end": 3.84
+   "start": 3.76,
+   "end": 3.9199998
   },
   {
    "w": "competing",
-   "start": 3.84,
-   "end": 4.16
+   "start": 3.9199998,
+   "end": 4.3199997
   },
   {
    "w": "with",
-   "start": 4.16,
-   "end": 4.4
+   "start": 4.3199997,
+   "end": 4.48
   },
   {
    "w": "it.",
+   "start": 4.48,
+   "end": 4.72
+  }
+ ],
+ "passport-1": [
+  {
+   "w": "And",
+   "start": 0.16,
+   "end": 0.48
+  },
+  {
+   "w": "Bitcoin",
+   "start": 0.48,
+   "end": 0.88
+  },
+  {
+   "w": "wallets",
+   "start": 0.88,
+   "end": 1.28
+  },
+  {
+   "w": "can",
+   "start": 1.28,
+   "end": 1.4399999
+  },
+  {
+   "w": "borrow",
+   "start": 1.4399999,
+   "end": 1.76
+  },
+  {
+   "w": "now",
+   "start": 1.76,
+   "end": 2
+  },
+  {
+   "w": "through",
+   "start": 2,
+   "end": 2.24
+  },
+  {
+   "w": "Mezo",
+   "start": 2.24,
+   "end": 2.6399999
+  },
+  {
+   "w": "Passport.",
+   "start": 2.6399999,
+   "end": 3.1999998
+  }
+ ],
+ "passport-2": [
+  {
+   "w": "Unisat",
+   "start": 0,
+   "end": 0.48
+  },
+  {
+   "w": "signs",
+   "start": 0.48,
+   "end": 0.79999995
+  },
+  {
+   "w": "a",
+   "start": 0.79999995,
+   "end": 0.88
+  },
+  {
+   "w": "Bitcoin",
+   "start": 0.88,
+   "end": 1.1999999
+  },
+  {
+   "w": "message.",
+   "start": 1.1999999,
+   "end": 2
+  },
+  {
+   "w": "A",
+   "start": 2,
+   "end": 2.24
+  },
+  {
+   "w": "smart",
+   "start": 2.24,
+   "end": 2.48
+  },
+  {
+   "w": "account",
+   "start": 2.48,
+   "end": 2.8
+  },
+  {
+   "w": "on",
+   "start": 2.8,
+   "end": 2.96
+  },
+  {
+   "w": "Mezo",
+   "start": 2.96,
+   "end": 3.36
+  },
+  {
+   "w": "opens",
+   "start": 3.36,
+   "end": 3.6799998
+  },
+  {
+   "w": "the",
+   "start": 3.6799998,
+   "end": 3.9199998
+  },
+  {
+   "w": "loan,",
+   "start": 3.9199998,
+   "end": 4.48
+  },
+  {
+   "w": "and",
+   "start": 4.56,
+   "end": 4.72
+  },
+  {
+   "w": "Mezo's",
+   "start": 4.72,
+   "end": 5.2
+  },
+  {
+   "w": "relayer",
+   "start": 5.2,
+   "end": 5.68
+  },
+  {
+   "w": "sends",
+   "start": 5.68,
+   "end": 6
+  },
+  {
+   "w": "it.",
+   "start": 6,
+   "end": 6.16
+  }
+ ],
+ "passport-3": [
+  {
+   "w": "Gas",
+   "start": 0.16,
+   "end": 0.48
+  },
+  {
+   "w": "fees",
+   "start": 0.48,
+   "end": 0.79999995
+  },
+  {
+   "w": "come",
+   "start": 0.79999995,
+   "end": 1.04
+  },
+  {
+   "w": "out",
+   "start": 1.04,
+   "end": 1.1999999
+  },
+  {
+   "w": "of",
+   "start": 1.1999999,
+   "end": 1.28
+  },
+  {
+   "w": "the",
+   "start": 1.28,
+   "end": 1.4399999
+  },
+  {
+   "w": "account's",
+   "start": 1.4399999,
+   "end": 1.8399999
+  },
+  {
+   "w": "Bitcoin,",
+   "start": 1.8399999,
+   "end": 2.56
+  },
+  {
+   "w": "so",
+   "start": 2.56,
+   "end": 2.72
+  },
+  {
+   "w": "there",
+   "start": 2.72,
+   "end": 2.96
+  },
+  {
+   "w": "is",
+   "start": 2.96,
+   "end": 3.04
+  },
+  {
+   "w": "no",
+   "start": 3.04,
+   "end": 3.28
+  },
+  {
+   "w": "EVM",
+   "start": 3.28,
+   "end": 3.76
+  },
+  {
+   "w": "wallet",
+   "start": 3.76,
+   "end": 4.08
+  },
+  {
+   "w": "to",
+   "start": 4.08,
+   "end": 4.24
+  },
+  {
+   "w": "set",
+   "start": 4.24,
+   "end": 4.4
+  },
+  {
+   "w": "up.",
    "start": 4.4,
    "end": 4.64
   }
@@ -1156,175 +1643,210 @@
  "mezo-1": [
   {
    "w": "It",
-   "start": 0.08,
-   "end": 0.39999998
+   "start": 0,
+   "end": 0.24
   },
   {
    "w": "runs",
-   "start": 0.39999998,
-   "end": 0.71999997
+   "start": 0.24,
+   "end": 0.48
   },
   {
    "w": "on",
-   "start": 0.71999997,
-   "end": 0.88
+   "start": 0.48,
+   "end": 0.64
   },
   {
    "w": "Mezo's",
-   "start": 0.88,
-   "end": 1.36
+   "start": 0.64,
+   "end": 1.1999999
   },
   {
    "w": "own",
-   "start": 1.36,
-   "end": 1.5999999
+   "start": 1.1999999,
+   "end": 1.36
   },
   {
-   "w": "contracts,",
-   "start": 1.5999999,
-   "end": 2.4799998
+   "w": "pieces,",
+   "start": 1.36,
+   "end": 2.1599998
   },
   {
    "w": "MUSD,",
-   "start": 2.56,
-   "end": 3.84
+   "start": 2.24,
+   "end": 3.5199997
   },
   {
    "w": "its",
-   "start": 3.84,
-   "end": 4.08
+   "start": 3.6799998,
+   "end": 3.9199998
   },
   {
    "w": "price",
-   "start": 4.08,
-   "end": 4.4
+   "start": 3.9199998,
+   "end": 4.24
   },
   {
    "w": "feed,",
-   "start": 4.4,
+   "start": 4.24,
    "end": 4.96
   },
   {
    "w": "borrower",
    "start": 4.96,
-   "end": 5.44
+   "end": 5.52
   },
   {
    "w": "operations,",
-   "start": 5.44,
-   "end": 6.4
+   "start": 5.52,
+   "end": 6.56
   },
   {
    "w": "hint",
-   "start": 6.48,
-   "end": 6.7999997
+   "start": 6.72,
+   "end": 7.12
   },
   {
    "w": "helpers,",
-   "start": 6.7999997,
-   "end": 7.3599997
+   "start": 7.12,
+   "end": 7.92
+  },
+  {
+   "w": "Trove",
+   "start": 8,
+   "end": 8.48
+  },
+  {
+   "w": "Manager,",
+   "start": 8.48,
+   "end": 9.2
   },
   {
    "w": "and",
-   "start": 7.3599997,
-   "end": 7.52
+   "start": 9.2,
+   "end": 9.36
   },
   {
-   "w": "sorted",
-   "start": 7.52,
-   "end": 7.8399997
-  },
-  {
-   "w": "trows.",
-   "start": 7.8399997,
-   "end": 8.32
+   "w": "Passport.",
+   "start": 9.36,
+   "end": 9.92
   }
  ],
  "shipped-1": [
   {
-   "w": "53",
-   "start": 0.24,
+   "w": "67",
+   "start": 0.16,
    "end": 0.79999995
   },
   {
    "w": "foundry",
    "start": 0.79999995,
-   "end": 1.28
+   "end": 1.36
   },
   {
    "w": "tests,",
-   "start": 1.28,
+   "start": 1.36,
    "end": 2.08
   },
   {
-   "w": "two",
-   "start": 2.1599998,
+   "w": "six",
+   "start": 2.08,
    "end": 2.48
   },
   {
-   "w": "verified",
+   "w": "fork",
    "start": 2.48,
-   "end": 3.04
+   "end": 2.8799999
   },
   {
-   "w": "contracts,",
-   "start": 3.04,
-   "end": 3.9199998
+   "w": "tests",
+   "start": 2.8799999,
+   "end": 3.28
   },
   {
-   "w": "a",
-   "start": 4,
-   "end": 4.16
+   "w": "against",
+   "start": 3.28,
+   "end": 3.6799998
   },
   {
-   "w": "web",
-   "start": 4.16,
-   "end": 4.4
+   "w": "Mezo,",
+   "start": 3.6799998,
+   "end": 4.56
   },
   {
-   "w": "app,",
-   "start": 4.4,
+   "w": "three",
+   "start": 4.64,
    "end": 4.96
   },
   {
-   "w": "and",
+   "w": "verified",
    "start": 4.96,
-   "end": 5.04
-  },
-  {
-   "w": "a",
-   "start": 5.04,
-   "end": 5.2
-  },
-  {
-   "w": "Keeper",
-   "start": 5.2,
    "end": 5.52
   },
   {
-   "w": "bot.",
+   "w": "contracts,",
    "start": 5.52,
-   "end": 6.16
+   "end": 6.56
   },
   {
-   "w": "Live",
-   "start": 6.3999996,
-   "end": 6.72
+   "w": "and",
+   "start": 6.64,
+   "end": 6.7999997
   },
   {
-   "w": "on",
-   "start": 6.72,
+   "w": "a",
+   "start": 6.7999997,
    "end": 6.96
   },
   {
-   "w": "Testnet",
+   "w": "keeper",
    "start": 6.96,
-   "end": 7.44
+   "end": 7.3599997
+  },
+  {
+   "w": "that",
+   "start": 7.3599997,
+   "end": 7.6
+  },
+  {
+   "w": "runs",
+   "start": 7.6,
+   "end": 7.9199996
+  },
+  {
+   "w": "every",
+   "start": 7.9199996,
+   "end": 8.32
+  },
+  {
+   "w": "five",
+   "start": 8.32,
+   "end": 8.639999
+  },
+  {
+   "w": "minutes.",
+   "start": 8.639999,
+   "end": 9.36
+  },
+  {
+   "w": "Live",
+   "start": 9.679999,
+   "end": 10
+  },
+  {
+   "w": "on",
+   "start": 10,
+   "end": 10.32
+  },
+  {
+   "w": "Testnet",
+   "start": 10.32,
+   "end": 10.8
   },
   {
    "w": "today.",
-   "start": 7.44,
-   "end": 7.7599998
+   "start": 10.8,
+   "end": 11.2
   }
  ],
  "outro-1": [

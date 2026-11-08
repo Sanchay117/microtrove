@@ -20,6 +20,7 @@ import { FAUCET } from "../config";
 import { GAS_RESERVE, maxBorrowFor } from "../lib/loan";
 import { Position } from "./Position";
 import { FirstLoanGuide } from "./FirstLoan";
+import { Governance } from "../components/Governance";
 import { mezoTestnet } from "viem/chains";
 
 export function Borrow() {
@@ -68,6 +69,8 @@ export function Borrow() {
           <span className="spec-s">Up to {fmtRatio(params.maxCr, 0)}</span>
         </div>
       </div>
+
+      <Governance params={params} audience="borrow" />
 
       {account && account.surplus > 0n && <SurplusCard amount={account.surplus} price={price} />}
 

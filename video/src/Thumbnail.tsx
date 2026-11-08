@@ -1,10 +1,13 @@
 import { AbsoluteFill } from "remotion";
 import { BrandMark, Wordmark } from "./components/Brand";
-import { C, mono, sans } from "./theme";
+import { C, FPS, mono, sans } from "./theme";
+import { TOTAL_FRAMES } from "./Video";
 
 // The trove square's side; the micro trove's is scaled by the square root of $50 / $2,200, so the areas are true.
 const BIG = 560;
 const SMALL = Math.round(BIG * Math.sqrt(50 / 2200));
+const SECONDS = Math.round(TOTAL_FRAMES / FPS);
+const LENGTH = `${Math.floor(SECONDS / 60)}:${String(SECONDS % 60).padStart(2, "0")}`;
 
 /** The video's cover: the pitch in one line, and the gap drawn to scale. */
 export const Thumbnail: React.FC = () => (
@@ -53,7 +56,7 @@ export const Thumbnail: React.FC = () => (
       }}
     >
       <span>RFC-2 microloans · live on Mezo Testnet</span>
-      <span>Demo · 2:10</span>
+      <span>Wave 2 demo · {LENGTH}</span>
     </div>
   </AbsoluteFill>
 );

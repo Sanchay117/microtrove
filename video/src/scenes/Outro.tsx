@@ -21,6 +21,7 @@ export const Outro: React.FC = () => {
     ...LINKS,
     { label: "Loan book", value: FACTS.loans },
     { label: "Vault", value: FACTS.vault },
+    { label: "Timelock", value: FACTS.timelock },
     { label: "Chain", value: "Mezo Testnet, 31611" },
   ];
   return (

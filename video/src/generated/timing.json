@@ -1,6 +1,6 @@
 {
   "fps": 30,
-  "total": 129.76666666666668,
+  "total": 170.93333333333337,
   "scenes": [
     {
       "id": "open",
@@ -135,10 +135,30 @@
       ]
     },
     {
-      "id": "promote",
+      "id": "terms",
       "start": 85.16666666666669,
-      "seconds": 18.133333333333333,
-      "frames": 544,
+      "seconds": 12.466666666666667,
+      "frames": 374,
+      "lines": [
+        {
+          "file": "audio/terms-1.wav",
+          "text": "Wave 1’s review found the owner could change loan terms at once.",
+          "start": 0.4,
+          "seconds": 3.7199791666666666
+        },
+        {
+          "file": "audio/terms-2.wav",
+          "text": "Now a timelock owns both contracts. Every change waits 24 hours in public, and the app counts it down.",
+          "start": 4.419979166666667,
+          "seconds": 7.239979166666667
+        }
+      ]
+    },
+    {
+      "id": "promote",
+      "start": 97.63333333333335,
+      "seconds": 25.433333333333334,
+      "frames": 763,
       "lines": [
         {
           "file": "audio/promote-1.wav",
@@ -154,43 +174,75 @@
         },
         {
           "file": "audio/promote-3.wav",
-          "text": "Microtrove feeds new troves into MUSD instead of competing with it.",
+          "text": "We ran it live: a 100 MUSD loan became a full trove with 1,800 MUSD of debt.",
           "start": 12.639958333333333,
-          "seconds": 4.679979166666667
+          "seconds": 6.879979166666667
+        },
+        {
+          "file": "audio/promote-4.wav",
+          "text": "Microtrove feeds new borrowers into MUSD instead of competing with it.",
+          "start": 19.819937499999998,
+          "seconds": 4.798791666666666
+        }
+      ]
+    },
+    {
+      "id": "passport",
+      "start": 123.06666666666669,
+      "seconds": 16.2,
+      "frames": 486,
+      "lines": [
+        {
+          "file": "audio/passport-1.wav",
+          "text": "And Bitcoin wallets can borrow now, through Mezo Passport.",
+          "start": 0.4,
+          "seconds": 3.3599791666666667
+        },
+        {
+          "file": "audio/passport-2.wav",
+          "text": "Unisat signs a Bitcoin message, a smart account on Mezo opens the loan, and Mezo’s relayer sends it.",
+          "start": 4.0599791666666665,
+          "seconds": 6.296333333333333
+        },
+        {
+          "file": "audio/passport-3.wav",
+          "text": "Gas fees come out of the account’s BTC, so there is no EVM wallet to set up.",
+          "start": 10.656312499999999,
+          "seconds": 4.6399791666666665
         }
       ]
     },
     {
       "id": "mezo",
-      "start": 103.30000000000001,
-      "seconds": 9.6,
-      "frames": 288,
+      "start": 139.26666666666668,
+      "seconds": 11.3,
+      "frames": 339,
       "lines": [
         {
           "file": "audio/mezo-1.wav",
-          "text": "It runs on Mezo’s own contracts: MUSD, its PriceFeed, BorrowerOperations, HintHelpers and SortedTroves.",
+          "text": "It runs on Mezo’s own pieces: MUSD, its PriceFeed, BorrowerOperations, HintHelpers, TroveManager and Passport.",
           "start": 0.3,
-          "seconds": 8.399979166666666
+          "seconds": 10.079979166666666
         }
       ]
     },
     {
       "id": "shipped",
-      "start": 112.9,
-      "seconds": 9,
-      "frames": 270,
+      "start": 150.5666666666667,
+      "seconds": 12.5,
+      "frames": 375,
       "lines": [
         {
           "file": "audio/shipped-1.wav",
-          "text": "53 Foundry tests, two verified contracts, a web app and a keeper bot. Live on testnet today.",
+          "text": "67 Foundry tests, six fork tests against Mezo, three verified contracts, and a keeper that runs every five minutes. Live on testnet today.",
           "start": 0.3,
-          "seconds": 7.879979166666667
+          "seconds": 11.3743125
         }
       ]
     },
     {
       "id": "outro",
-      "start": 121.9,
+      "start": 163.0666666666667,
       "seconds": 7.866666666666666,
       "frames": 236,
       "lines": [

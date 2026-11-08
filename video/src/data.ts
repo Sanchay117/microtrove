@@ -1,5 +1,6 @@
 import borrowClip from "../public/clips/borrow.json";
 import lendClip from "../public/clips/lend.json";
+import passportClip from "../public/clips/passport.json";
 import promoteClip from "../public/clips/promote.json";
 import timingJson from "./generated/timing.json";
 import wordsJson from "./generated/words.json";
@@ -60,15 +61,31 @@ export interface Clip {
 }
 
 // The JSON's boxes are plain number arrays; capture.ts always writes four values.
-export const clips = { borrow: borrowClip as unknown as Clip, lend: lendClip as unknown as Clip, promote: promoteClip as unknown as Clip };
+export const clips = {
+  borrow: borrowClip as unknown as Clip,
+  lend: lendClip as unknown as Clip,
+  promote: promoteClip as unknown as Clip,
+  passport: passportClip as unknown as Clip,
+};
 
-/** Facts shown on screen, all from Mezo Testnet (deployments/mezo-testnet.json and the keeper's log). */
+/**
+ * Facts shown on screen, all from Mezo Testnet (deployments/mezo-testnet.json and the keeper's log). The
+ * keeper's liquidation and the claim ran on the Wave 1 contracts; everything else is the Wave 2 deployment.
+ */
 export const FACTS = {
-  loans: "0x6Af91a391C31e85479bd324698c30697EbEC8C77",
-  vault: "0xE128f5F21Adac4a11A22B55Da77bfdb6ab1304e2",
+  loans: "0xE0e2155f9C5a5B55eADf952d0a01d3E691092dcf",
+  vault: "0x11fc55CD01411bd1453EE62b40cB4e653f7726eA",
+  timelock: "0xD3B072154FE07F302Ec173C7D9d0cAB6089d764a",
+  handoverTx: "0x21d507e6be67e8f9d3c7cfb8d97414209f43794e47e213345655691bd1224c93",
+  promotionTx: "0x9f1a1aae9d3d0106e48dddae8ef4bf22c4e48cebad975a48c9f05dae139b9642",
   liquidationTx: "0xfe7a0c608465370d633178d33ef1d7696ad057026eb36172b0f28c32a48dcd51",
   claimTx: "0xc3a17a4a897a2284c6d53a65e6dcb524019358363927c54a8b6d67db5d4e568a",
 };
 
-/** Links for the end card. Fill these in once the app is hosted and the repository is public, then re-render. */
-export const LINKS: { label: string; value: string }[] = [{ label: "Code", value: "github.com/Sanchay117/microtrove" }];
+/** Links for the end card. */
+export const LINKS: { label: string; value: string }[] = [
+  { label: "App", value: "microtrove.vercel.app" },
+  { label: "Code", value: "github.com/Sanchay117/microtrove" },
+];
+
+export const short = (hash: string) => `${hash.slice(0, 6)}…${hash.slice(-4)}`;

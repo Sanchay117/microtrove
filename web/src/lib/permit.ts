@@ -1,6 +1,7 @@
 import { erc20Abi, parseAbi, parseSignature, type Address, type Hex } from "viem";
-import { useAccount, usePublicClient, useSignTypedData, useWriteContract } from "wagmi";
+import { useAccount, useBytecode, usePublicClient, useSignTypedData, useWriteContract } from "wagmi";
 import { addresses, CHAIN_ID } from "../config";
+import { BITCOIN_CONNECTOR_TYPE } from "../bitcoin";
 
 const noncesAbi = parseAbi(["function nonces(address owner) view returns (uint256)"]);
 
@@ -37,7 +38,7 @@ const isRejection = (error: unknown) => {
  * wallets and wallets that cannot sign typed data.
  */
 export function useMusdPermit() {
-  const { address } = useAccount();
+  const { address, connector } = useAccount();
   const client = usePublicClient();
   const { signTypedDataAsync } = useSignTypedData();
 
@@ -49,8 +50,9 @@ export function useMusdPermit() {
       client.getCode({ address }),
     ]);
     if (allowance >= value) return { kind: "allowance" };
-    // MUSD checks permits with ECDSA only, which smart accounts cannot produce.
-    if (code && code !== "0x") return { kind: "approve" };
+    // MUSD checks permits with ECDSA only, which smart accounts cannot produce. That
+    // includes Mezo Passport's Bitcoin wallets, whose Safe may not be deployed yet.
+    if ((code && code !== "0x") || connector?.type === BITCOIN_CONNECTOR_TYPE) return { kind: "approve" };
 
     const deadline = BigInt(Math.floor(Date.now() / 1000) + 20 * 60);
     let signature: Hex;
@@ -68,6 +70,17 @@ export function useMusdPermit() {
     const { r, s, v, yParity } = parseSignature(signature);
     return { kind: "permit", permit: { deadline, r, s, v: Number(v ?? BigInt(27 + (yParity ?? 0))) } };
   };
+}
+
+/**
+ * Whether the connected wallet pays with an MUSD permit, for copy that explains the
+ * steps. Smart accounts, Mezo Passport's Bitcoin wallets among them, approve instead.
+ */
+export function useSignsPermits() {
+  const { address, connector } = useAccount();
+  const { data: code } = useBytecode({ address });
+  if (connector?.type === BITCOIN_CONNECTOR_TYPE) return false;
+  return !code || code === "0x";
 }
 
 /**
