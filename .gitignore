@@ -16,6 +16,9 @@ video/out/
 video/public/music/
 video/public/sfx/
 
+# Keeper alert history
+keeper/.state.json
+
 # Node
 node_modules/
 dist/

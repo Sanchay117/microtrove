@@ -12,15 +12,21 @@ the position into a full MUSD trove in one transaction.
 
 | Contract | Address |
 | --- | --- |
-| `MicrotroveVault` | [`0xE128f5F21Adac4a11A22B55Da77bfdb6ab1304e2`](https://explorer.test.mezo.org/address/0xE128f5F21Adac4a11A22B55Da77bfdb6ab1304e2) |
-| `Microtroves` | [`0x6Af91a391C31e85479bd324698c30697EbEC8C77`](https://explorer.test.mezo.org/address/0x6Af91a391C31e85479bd324698c30697EbEC8C77) |
+| `MicrotroveVault` | [`0x11fc55CD01411bd1453EE62b40cB4e653f7726eA`](https://explorer.test.mezo.org/address/0x11fc55CD01411bd1453EE62b40cB4e653f7726eA) |
+| `Microtroves` | [`0xE0e2155f9C5a5B55eADf952d0a01d3E691092dcf`](https://explorer.test.mezo.org/address/0xE0e2155f9C5a5B55eADf952d0a01d3E691092dcf) |
 
 Both are verified on Sourcify with an exact match
-([vault](https://repo.sourcify.dev/31611/0xE128f5F21Adac4a11A22B55Da77bfdb6ab1304e2),
-[loan book](https://repo.sourcify.dev/31611/0x6Af91a391C31e85479bd324698c30697EbEC8C77)),
-deployed against the live MUSD contracts,
-and seeded with 1,400 MUSD that was borrowed from a real MUSD trove. A full loan
-lifecycle has run on chain:
+([vault](https://repo.sourcify.dev/31611/0x11fc55CD01411bd1453EE62b40cB4e653f7726eA),
+[loan book](https://repo.sourcify.dev/31611/0xE0e2155f9C5a5B55eADf952d0a01d3E691092dcf)),
+deployed against the live MUSD contracts with a 10% protocol share of interest, and seeded
+with 1,500 MUSD borrowed from a real MUSD trove
+([deposit](https://explorer.test.mezo.org/tx/0x187fee61529432e793c42d773931f3a02e04ed77e5449e6cc5f6e82d3afe6765)).
+
+This is the Wave 2 deployment. The Wave 1 contracts
+([vault](https://explorer.test.mezo.org/address/0xE128f5F21Adac4a11A22B55Da77bfdb6ab1304e2),
+[loan book](https://explorer.test.mezo.org/address/0x6Af91a391C31e85479bd324698c30697EbEC8C77))
+had the withdrawal-queue issue described under [Lender vault](#lender-vault). They were
+emptied and paused, and the transactions below ran on them. A full loan lifecycle:
 
 | Step | Transaction |
 | --- | --- |
@@ -67,10 +73,14 @@ Addresses, parameters and every transaction are in
 | Collateral ratio | 110% minimum, 500% maximum |
 | Matured-loan liquidator premium | 10% of the debt, paid in BTC |
 | Underwater liquidator premium | 5% |
-| Protocol share of interest | 0% (fee switch, capped at 20%) |
+| Protocol share of interest | 10%, capped at 20% |
 
 Rate, fee and term are captured when a debt term starts, so governance changes only
 affect new terms. Borrowing more never extends the maturity.
+
+The protocol share accrues in the loan book as `protocolFees`, and anyone can send it to
+the fee recipient with `withdrawProtocolFees`. Repayment never transfers to the fee
+recipient directly, so a recipient that rejects MUSD cannot block a borrower.
 
 ### Liquidations
 
@@ -92,6 +102,13 @@ collateral ratio.
 - `requestRedeem` queues shares first-in, first-out. Queued shares keep earning until
   `processQueue` pays them, and their value is reserved so no new loans are made from it.
   Every loan matures within one term, so a request waits at most that long.
+- **No request can block the queue.** MUSD reverts on a transfer to itself, so in Wave 1 a
+  lender could queue a withdrawal with MUSD as the receiver and make every later
+  `processQueue` revert. `requestRedeem` now rejects MUSD and the vault as receivers,
+  and if a payment is still refused (a blocklisted receiver, say), the request is closed
+  anyway: its shares are burned, the MUSD is set aside in `claimable[owner]`, and the owner
+  takes it with `claim(to)`. Set-aside MUSD is excluded from lending and from the share price.
+- `getRequests` and `assetsAhead` let the app show each lender's place in the queue.
 - The vault owner can only connect the loan book once. Nobody can move lender funds.
 
 ### Safety properties
@@ -107,10 +124,35 @@ git submodule update --init --recursive   # once, from the repository root
 forge test
 ```
 
-53 tests: unit tests for every borrower, lender, keeper and governance path, fuzz
+59 tests: unit tests for every borrower, lender, keeper and governance path, fuzz
 tests, promotion tests that sign real EIP-712 messages against a mock that reproduces
 `BorrowerOperationsSignatures`, and a stateful invariant suite (64 runs x 400 calls)
-checking that BTC, principal, interest and vault assets always reconcile.
+checking that BTC, principal, interest, protocol fees and vault assets always reconcile
+and that the queue only ever moves past closed requests. The invariant handler sends one
+request in four to a receiver that refuses MUSD.
+
+### Fork tests against Mezo Testnet
+
+```bash
+MEZO_FORK=1 forge test --match-path "test/fork/*" -vv
+```
+
+`test/fork/MezoFork.t.sol` forks Mezo Testnet and deploys Microtrove next to the real MUSD
+contracts. A lender opens a real MUSD trove through `BorrowerOperations` and deposits its
+MUSD, then six tests run:
+
+| Test | What it proves on real contracts |
+| --- | --- |
+| `test_Fork_LenderMusdComesFromARealTrove` | The vault holds MUSD minted by a real trove |
+| `test_Fork_PromoteIntoRealMusdTrove` | A signed `OpenTrove` message opens a full MUSD trove through `BorrowerOperationsSignatures` and repays the micro loan |
+| `test_Fork_PromoteRejectsASignatureForOtherAmounts` | A signature made for other amounts is rejected and no trove opens |
+| `test_Fork_CloseWithRealMusdPermit` | A real EIP-2612 permit on MUSD closes a loan in one call |
+| `test_Fork_QueueCannotBeFrozenWithMusdAsReceiver` | Real MUSD refuses transfers to itself, the vault refuses it as a receiver, and the queue keeps paying |
+| `test_Fork_KeeperLiquidatesMaturedLoan` | A keeper liquidates a matured loan at the live price |
+
+Forge cannot run Mezo's oracle precompile, so the tests replay its latest answer at the same
+address, read live with `vm.rpc`. Without `MEZO_FORK=1` the suite is skipped. Set
+`MEZO_RPC_URL` to use another endpoint.
 
 ```bash
 forge coverage --no-match-coverage "test|script"

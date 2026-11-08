@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAccount, useReadContracts, useWriteContract } from "wagmi";
+import { useAccount, useReadContract, useWriteContract } from "wagmi";
 import { addresses } from "../config";
 import { assetsToShares, sharesToAssets, useProtocol, vault } from "../hooks/useProtocol";
 import { useAccountState } from "../hooks/useAccountState";
@@ -7,27 +7,34 @@ import { useTx } from "../tx";
 import { AmountInput, Card, Kicker, Notice, Row, Segmented, Stat } from "../components/ui";
 import { ONE } from "../lib/math";
 import { fmtBps, fmtMusd, parseAmount, toInput } from "../lib/format";
+import { VaultHistory } from "./VaultHistory";
 
 type Mode = "deposit" | "withdraw";
 
-/** The latest 100 redemption requests, oldest first. */
-function useRequests(requestCount: bigint) {
-  const first = requestCount > 100n ? requestCount - 100n : 0n;
-  const ids = Array.from({ length: Number(requestCount - first) }, (_, i) => first + BigInt(i));
-  const q = useReadContracts({
-    allowFailure: false,
-    contracts: ids.map((id) => ({ ...vault, functionName: "getRequest" as const, args: [id] as const })),
-    query: { enabled: ids.length > 0, refetchInterval: 10_000 },
+/** Every request from the queue head on, oldest first, in one call. */
+function useRequests(queueHead: bigint, requestCount: bigint) {
+  const count = requestCount > queueHead ? requestCount - queueHead : 0n;
+  const q = useReadContract({
+    ...vault,
+    functionName: "getRequests",
+    args: [queueHead, count],
+    query: { enabled: count > 0n, refetchInterval: 10_000 },
   });
-  return (q.data ?? []).map((r, i) => ({ id: ids[i], ...r }));
+  return (q.data ?? []).map((r, i) => ({ id: queueHead + BigInt(i), ...r }));
 }
+
+const ordinal = (n: number) => {
+  const s = ["th", "st", "nd", "rd"];
+  const v = n % 100;
+  return `${n}${s[(v - 20) % 10] || s[v] || s[0]}`;
+};
 
 export function Lend() {
   const { address } = useAccount();
   const { data: protocol } = useProtocol();
   const { data: account } = useAccountState();
   const [mode, setMode] = useState<Mode>("deposit");
-  const requests = useRequests(protocol?.requestCount ?? 0n);
+  const requests = useRequests(protocol?.queueHead ?? 0n, protocol?.requestCount ?? 0n);
 
   if (!protocol) return <div className="loading">Loading the vault...</div>;
   const { totalAssets, totalSupply } = protocol;
@@ -51,6 +58,8 @@ export function Lend() {
           paid as loans are repaid.
         </p>
       </section>
+
+      {account && account.claimable > 0n && <ClaimCard amount={account.claimable} />}
 
       <div className="specs">
         <div className="spec">
@@ -99,7 +108,7 @@ export function Lend() {
                   : `${fmtMusd(shares, 4)} mtMUSD`
               }
             />
-            <Stat label="Withdraw instantly" value={`${fmtMusd(account?.maxWithdraw ?? 0n)} MUSD`} sub="Limited to idle MUSD" />
+            <Stat label="Withdraw instantly" value={`${fmtMusd(account?.maxWithdraw ?? 0n)} MUSD`} sub="Idle MUSD the queue does not need" />
           </div>
           <Segmented<Mode>
             value={mode}
@@ -126,7 +135,35 @@ export function Lend() {
           totalSupply={totalSupply}
         />
       </div>
+
+      <VaultHistory />
     </div>
+  );
+}
+
+function ClaimCard({ amount }: { amount: bigint }) {
+  const { address } = useAccount();
+  const { run, busy } = useTx();
+  const { writeContractAsync } = useWriteContract();
+  return (
+    <Card className="card-accent">
+      <div className="surplus">
+        <div>
+          <h2>MUSD waiting for you</h2>
+          <p>
+            A queued withdrawal of yours was filled, but its receiver could not accept MUSD. The vault kept{" "}
+            <strong>{fmtMusd(amount)} MUSD</strong> for you instead of holding up the queue.
+          </p>
+        </div>
+        <button
+          className="btn btn-primary"
+          disabled={busy || !address}
+          onClick={() => run("Claim MUSD", () => writeContractAsync({ ...vault, functionName: "claim", args: [address!] }))}
+        >
+          Claim {fmtMusd(amount)} MUSD
+        </button>
+      </div>
+    </Card>
   );
 }
 
@@ -251,20 +288,46 @@ function Queue({ requests, queueHead, pendingShares, idle, totalAssets, totalSup
   const { writeContractAsync } = useWriteContract();
   const active = requests.filter((r) => r.shares > 0n && r.id >= queueHead);
   const mine = active.filter((r) => address && r.owner.toLowerCase() === address.toLowerCase());
+  const value = (shares: bigint) => sharesToAssets(shares, totalAssets, totalSupply);
 
   return (
     <Card index="2.2" title="Withdrawal queue" aside={<span className="badge">FIFO</span>}>
-      <Row label="Queued" value={`${fmtMusd(sharesToAssets(pendingShares, totalAssets, totalSupply))} MUSD in ${active.length} request${active.length === 1 ? "" : "s"}`} />
+      <Row label="Queued" value={`${fmtMusd(value(pendingShares))} MUSD in ${active.length} request${active.length === 1 ? "" : "s"}`} />
       <Row label="Idle MUSD to pay it" value={`${fmtMusd(idle)} MUSD`} />
+      {active.length > 0 && (
+        <ol className="queue" aria-label="Queued requests, first in line at the top">
+          {active.slice(0, 8).map((r, i) => {
+            const own = address && r.owner.toLowerCase() === address.toLowerCase();
+            return (
+              <li key={r.id.toString()} className={own ? "is-mine" : ""}>
+                <span className="queue-n">{i + 1}</span>
+                <span className="mono">{own ? "You" : `${r.owner.slice(0, 6)}...${r.owner.slice(-4)}`}</span>
+                <span className="num">{fmtMusd(value(r.shares))} MUSD</span>
+              </li>
+            );
+          })}
+          {active.length > 8 && <li className="muted">and {active.length - 8} more</li>}
+        </ol>
+      )}
       {mine.length > 0 && (
         <ul className="list">
           {mine.map((r) => {
-            const ahead = active.filter((a) => a.id < r.id).length;
+            const place = active.findIndex((a) => a.id === r.id) + 1;
+            const ahead = active.filter((a) => a.id < r.id).reduce((sum, a) => sum + value(a.shares), 0n);
+            const needed = ahead + value(r.shares);
+            const status =
+              idle >= needed
+                ? "Payable now: anyone can process the queue"
+                : idle > ahead
+                  ? `Partly payable now, the rest waits for ${fmtMusd(needed - idle)} MUSD of repayments`
+                  : `Waits for ${fmtMusd(needed - idle)} MUSD of repayments`;
             return (
               <li key={r.id.toString()}>
                 <div>
-                  <strong>#{r.id.toString()}</strong> {fmtMusd(sharesToAssets(r.shares, totalAssets, totalSupply))} MUSD
-                  <div className="muted">{ahead === 0 ? "Next in line" : `${ahead} ahead`}</div>
+                  <strong>{ordinal(place)} in line</strong> · request #{r.id.toString()} · {fmtMusd(value(r.shares))} MUSD
+                  <div className="muted">
+                    {ahead === 0n ? "Nothing ahead of you" : `${fmtMusd(ahead)} MUSD ahead of you`}. {status}.
+                  </div>
                 </div>
                 <button
                   className="btn btn-ghost btn-sm"

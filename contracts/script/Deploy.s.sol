@@ -27,7 +27,8 @@ contract Deploy is Script {
         uint256 term = vm.envOr("TERM_SECONDS", uint256(90 days));
         uint256 seed = vm.envOr("SEED_MUSD", uint256(0));
 
-        // RFC-2 defaults: 25 to 200 MUSD, 5% APR, 110% to 500% collateral.
+        // RFC-2 defaults: 25 to 200 MUSD, 5% APR, 110% to 500% collateral. The
+        // protocol keeps 10% of interest, like a lending market's reserve factor.
         Microtroves.Params memory params = Microtroves.Params({
             interestRateBps: 500,
             issuanceFeeBps: 50,
@@ -38,7 +39,7 @@ contract Deploy is Script {
             maxCr: 5e18,
             expiryBonusBps: 1_000,
             underwaterBonusBps: 500,
-            protocolFeeBps: 0
+            protocolFeeBps: 1_000
         });
 
         vm.startBroadcast(key);

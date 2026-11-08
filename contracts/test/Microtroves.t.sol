@@ -504,7 +504,43 @@ contract MicrotrovesTest is BaseTest {
         _fund(bob, 1e18);
         vm.prank(bob);
         loans.close();
-        assertEq(musd.balanceOf(treasury), interest / 10);
+        assertEq(loans.protocolFees(), interest / 10);
+        assertEq(musd.balanceOf(address(loans)), interest / 10);
         assertEq(vault.idleAssets(), 9_975e18 + 25.125e18 + interest - interest / 10);
+
+        // Anyone can send the fees on to the fee recipient.
+        vm.prank(carol);
+        assertEq(loans.withdrawProtocolFees(), interest / 10);
+        assertEq(musd.balanceOf(treasury), interest / 10);
+        assertEq(loans.protocolFees(), 0);
+
+        vm.expectRevert(Microtroves.NothingToClaim.selector);
+        loans.withdrawProtocolFees();
+    }
+
+    /// @dev A fee recipient that cannot receive MUSD never stops borrowers from repaying.
+    function test_ProtocolFee_BrokenRecipientDoesNotBlockRepayment() public {
+        Microtroves.Params memory p = defaultParams();
+        p.protocolFeeBps = 1_000;
+        vm.prank(gov);
+        loans.setParams(p);
+        musd.setBlocked(treasury, true);
+
+        _open(bob, 50e18, 25e18);
+        vm.warp(START + 30 days);
+        _fund(bob, 1e18);
+        vm.prank(bob);
+        loans.close();
+        uint256 fees = loans.protocolFees();
+        assertGt(fees, 0);
+
+        vm.expectRevert();
+        loans.withdrawProtocolFees();
+
+        address newTreasury = makeAddr("newTreasury");
+        vm.prank(gov);
+        loans.setFeeRecipient(newTreasury);
+        loans.withdrawProtocolFees();
+        assertEq(musd.balanceOf(newTreasury), fees);
     }
 }

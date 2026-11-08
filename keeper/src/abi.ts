@@ -17,6 +17,7 @@ export const vaultAbi = parseAbi([
   "function idleAssets() view returns (uint256)",
   "function processQueue(uint256 maxRequests) returns (uint256 filled)",
   "event RedeemRequestFilled(uint256 indexed id, address indexed receiver, uint256 shares, uint256 assets, bool complete)",
+  "event RedeemPaymentDeferred(uint256 indexed id, address indexed owner, address indexed receiver, uint256 assets)",
 ]);
 
 // MUSD's PriceFeed updates its last good price in fetchPrice, but an eth_call is enough to read it.

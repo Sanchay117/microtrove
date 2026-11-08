@@ -5,12 +5,18 @@ import {console} from "forge-std/console.sol";
 
 import {BaseTest} from "../BaseTest.sol";
 import {Handler} from "./Handler.sol";
+import {Microtroves} from "../../src/Microtroves.sol";
 
 contract InvariantsTest is BaseTest {
     Handler internal handler;
 
     function setUp() public override {
         super.setUp();
+        // Run with the deployed 10% protocol fee so fee accounting is exercised too.
+        Microtroves.Params memory p = defaultParams();
+        p.protocolFeeBps = 1_000;
+        vm.prank(gov);
+        loans.setParams(p);
         handler = new Handler(loans, vault, musd, feed);
         targetContract(address(handler));
     }
@@ -40,14 +46,24 @@ contract InvariantsTest is BaseTest {
         assertApproxEqAbs(interest, loans.pendingTotalInterest(), 1e6, "interest");
     }
 
-    /// @dev The loan book never keeps MUSD; it moves straight to the vault or treasury.
-    function invariant_LoanBookHoldsNoMusd() public view {
-        assertEq(musd.balanceOf(address(loans)), 0);
+    /// @dev The loan book keeps only the protocol's fees; repayments go straight to the vault.
+    function invariant_LoanBookHoldsOnlyProtocolFees() public view {
+        assertEq(musd.balanceOf(address(loans)), loans.protocolFees());
     }
 
-    /// @dev Vault assets are exactly idle MUSD plus what borrowers owe lenders.
+    /// @dev Vault assets are exactly idle MUSD plus what borrowers owe lenders, and
+    ///      MUSD set aside for refused payments is fully backed.
     function invariant_VaultAssetsAreIdlePlusLoans() public view {
-        assertEq(vault.totalAssets(), musd.balanceOf(address(vault)) + loans.lenderAssets());
+        uint256 held = musd.balanceOf(address(vault));
+        assertEq(vault.totalAssets(), held - vault.totalClaimable() + loans.lenderAssets());
+    }
+
+    /// @dev Queue progress: everything before the head is fully paid or cancelled.
+    function invariant_QueueHeadOnlyPassesClosedRequests() public view {
+        uint256 head = vault.queueHead();
+        for (uint256 i; i < head; ++i) {
+            assertEq(vault.getRequest(i).shares, 0);
+        }
     }
 
     /// @dev Queued shares are escrowed by the vault itself.
@@ -57,7 +73,7 @@ contract InvariantsTest is BaseTest {
 
     /// @dev Logs how often each path succeeded, so a run that only hit reverts is visible.
     function afterInvariant() public view {
-        string[9] memory actions = [
+        string[10] memory actions = [
             "open",
             "borrow",
             "repay",
@@ -66,7 +82,8 @@ contract InvariantsTest is BaseTest {
             "claimSurplus",
             "redeemNow",
             "requestRedeem",
-            "filled"
+            "filled",
+            "claim"
         ];
         for (uint256 i; i < actions.length; ++i) {
             console.log(actions[i], handler.successes(actions[i]));
@@ -75,7 +92,7 @@ contract InvariantsTest is BaseTest {
 
     /// @dev Nothing is lent out of MUSD reserved for queued withdrawals.
     function invariant_LendableNeverExceedsUnreservedIdle() public view {
-        uint256 idle = musd.balanceOf(address(vault));
+        uint256 idle = musd.balanceOf(address(vault)) - vault.totalClaimable();
         uint256 reserved = vault.pendingAssets();
         assertEq(vault.lendableLiquidity(), idle > reserved ? idle - reserved : 0);
     }

@@ -2,10 +2,10 @@
   "chainId": 31611,
   "rpcUrl": "https://rpc.test.mezo.org",
   "explorer": "https://explorer.test.mezo.org",
-  "deployBlock": 16360581,
+  "deployBlock": 16635016,
   "contracts": {
-    "MicrotroveVault": "0xE128f5F21Adac4a11A22B55Da77bfdb6ab1304e2",
-    "Microtroves": "0x6Af91a391C31e85479bd324698c30697EbEC8C77"
+    "MicrotroveVault": "0x11fc55CD01411bd1453EE62b40cB4e653f7726eA",
+    "Microtroves": "0xE0e2155f9C5a5B55eADf952d0a01d3E691092dcf"
   },
   "params": {
     "interestRateBps": 500,
@@ -17,8 +17,9 @@
     "maxCr": "5000000000000000000",
     "expiryBonusBps": 1000,
     "underwaterBonusBps": 500,
-    "protocolFeeBps": 0
+    "protocolFeeBps": 1000
   },
+  "feeRecipient": "0xaFE2D4f0a5064c006Efd64774ABee42D26790779",
   "mezo": {
     "MUSD": "0x118917a40FAF1CD7a13dB0Ef56C86De7973Ac503",
     "PriceFeed": "0x86bCF0841622a5dAC14A313a15f96A95421b9366",
@@ -29,26 +30,51 @@
     "TroveManager": "0xE47c80e8c23f6B4A1aE41c34837a0599D5D16bb0"
   },
   "transactions": {
-    "deployVault": "0x70e96d93a2bc157413a046ebb51a69295b0292bc691cb0a66ba8ca77f6ca49ea",
-    "deployMicrotroves": "0x6fc082509afaaa93147acdcadf0bbbe66da288cf34fd91ab242725f728ba4f06",
-    "setLoanBook": "0x2720eacf5853684c0e84c6154bc4e216f1a4a9d3cac6a2fdca777e4b3f440f45",
-    "seedDeposit1400Musd": "0x6721cb0bf05240d5b35d3a99cdaf69a424293d58e3683644a45fa7fe3424beb1",
-    "openAndBorrow100Musd": "0x62698fb4161b379a1ddc1c88819fda142242fec31ea3333a4f7d5011a9fa7ecd",
-    "repay50Musd": "0x8ecfcc6e439c557b146dfa19f013eb206860997234b7ddd8ae062351fa976c26",
-    "close": "0xb82399bfeb6a13e5dde6cdb823c318f5f9a09f5e64c28c5df2b3ac0d33da66b1",
-    "fundKeeperBtc": "0x3425b966aefad31a4efc09461bcf812a55531002e8101a3cd4828c8b5f0b6f4c",
-    "fundKeeper60Musd": "0x1295444b8c62db78acfb8c9fa67a52966b8c2b17046f503e619f31c9b5c90745",
-    "expiryDemoSetTerm1h": "0xc78229b93c72d21d8b30f772fa7eebdf7e59a47f8da58283cef98b3ac8fc8a5d",
-    "expiryDemoRepayAll": "0x10b891afc79dad5bcdd108d9b076bb201188790c7327d72883a3dc8186a5eebd",
-    "expiryDemoBorrow40Musd": "0xacd3596ace2616460c1ed0350030f5be3525eae54d264979c923b305aea85609",
-    "expiryDemoRestoreTerm90d": "0xeac8e308003d197df223c101e0c5bf597a9b9d26e21e890fa5a091634b81d033",
-    "keeperApproveMusd": "0xf5acc29062201278accc6f83e5b0b7b65c43ccf5c2a089b980f5b2f196c03fda",
-    "keeperLiquidateMatured": "0xfe7a0c608465370d633178d33ef1d7696ad057026eb36172b0f28c32a48dcd51",
-    "borrowerClaimSurplus": "0xc3a17a4a897a2284c6d53a65e6dcb524019358363927c54a8b6d67db5d4e568a"
+    "deployVault": "0xc489a3b75effa9a0be2f240034822fad1dcbb7fd51e0a7bb08d276ac31d2ea95",
+    "deployMicrotroves": "0x6fa2365ee75c76e413f2c03f6c92847e270146acb040527a1956bc089e13407c",
+    "setLoanBook": "0x74dd59c352c3adc7b7ee2170ab294c329fff6970c137a35d24957d200fa2b573",
+    "seedApprove": "0x319ccbf830d0bef4aa9e76cdc46af68ca44ef34f1ab60736c8b76fe5eb00e73a",
+    "seedDeposit1500Musd": "0x187fee61529432e793c42d773931f3a02e04ed77e5449e6cc5f6e82d3afe6765",
+    "appApproveVault": "0x2a7de0e1404ebfa7746d24aced890d7204288be5f8af9783d41a8d1cafb7a043",
+    "appDeposit100Musd": "0x4f9038ccdf6f281ac245a1c5cb713b53812a0e5b6127ed3109ffee15beeaa3f2",
+    "appOpenBorrow50Musd": "0xb983fd89ef28f81064028503094d1f938c2110f1fd40f9132aafc8901ce3d837",
+    "appRepay20WithPermit": "0x6643a86edcb3b750a7590a077988b3395bac8393b7babb5f1aacba0e1ad8a6ff",
+    "appCloseWithPermit": "0x109940c37e7003c5ed32c6b73d922c2364bb4f5054aa002820073c99cc858ba2",
+    "appWithdraw20Musd": "0x011ec18af364a174fc32872f09c4dd947d36f04894ab644ba0b9ee700181f3ca"
   },
   "keeper": {
-    "address": "0xc9Bea2900c81FB0148851Ec6e70E90B848288653",
-    "note": "Testnet keeper wallet. For the expiry demo the term was set to 1 hour for one borrow, then restored to 90 days."
+    "address": "0xc9Bea2900c81FB0148851Ec6e70E90B848288653"
   },
-  "verification": "Sourcify exact match for both contracts"
+  "verification": "Sourcify exact match for both contracts",
+  "wave1": {
+    "note": "First deployment, retired in Wave 2 after review found that a redeem request paying the MUSD contract itself could freeze the withdrawal queue. All funds were withdrawn and the loan book paused.",
+    "deployBlock": 16360581,
+    "lastActiveBlock": 16634996,
+    "contracts": {
+      "MicrotroveVault": "0xE128f5F21Adac4a11A22B55Da77bfdb6ab1304e2",
+      "Microtroves": "0x6Af91a391C31e85479bd324698c30697EbEC8C77"
+    },
+    "transactions": {
+      "deployVault": "0x70e96d93a2bc157413a046ebb51a69295b0292bc691cb0a66ba8ca77f6ca49ea",
+      "deployMicrotroves": "0x6fc082509afaaa93147acdcadf0bbbe66da288cf34fd91ab242725f728ba4f06",
+      "setLoanBook": "0x2720eacf5853684c0e84c6154bc4e216f1a4a9d3cac6a2fdca777e4b3f440f45",
+      "seedDeposit1400Musd": "0x6721cb0bf05240d5b35d3a99cdaf69a424293d58e3683644a45fa7fe3424beb1",
+      "openAndBorrow100Musd": "0x62698fb4161b379a1ddc1c88819fda142242fec31ea3333a4f7d5011a9fa7ecd",
+      "repay50Musd": "0x8ecfcc6e439c557b146dfa19f013eb206860997234b7ddd8ae062351fa976c26",
+      "close": "0xb82399bfeb6a13e5dde6cdb823c318f5f9a09f5e64c28c5df2b3ac0d33da66b1",
+      "fundKeeperBtc": "0x3425b966aefad31a4efc09461bcf812a55531002e8101a3cd4828c8b5f0b6f4c",
+      "fundKeeper60Musd": "0x1295444b8c62db78acfb8c9fa67a52966b8c2b17046f503e619f31c9b5c90745",
+      "expiryDemoSetTerm1h": "0xc78229b93c72d21d8b30f772fa7eebdf7e59a47f8da58283cef98b3ac8fc8a5d",
+      "expiryDemoRepayAll": "0x10b891afc79dad5bcdd108d9b076bb201188790c7327d72883a3dc8186a5eebd",
+      "expiryDemoBorrow40Musd": "0xacd3596ace2616460c1ed0350030f5be3525eae54d264979c923b305aea85609",
+      "expiryDemoRestoreTerm90d": "0xeac8e308003d197df223c101e0c5bf597a9b9d26e21e890fa5a091634b81d033",
+      "keeperApproveMusd": "0xf5acc29062201278accc6f83e5b0b7b65c43ccf5c2a089b980f5b2f196c03fda",
+      "keeperLiquidateMatured": "0xfe7a0c608465370d633178d33ef1d7696ad057026eb36172b0f28c32a48dcd51",
+      "borrowerClaimSurplus": "0xc3a17a4a897a2284c6d53a65e6dcb524019358363927c54a8b6d67db5d4e568a",
+      "retireBurnerCloseLoan": "0xb8ba2a46178b7176adbddbe1077d18a02f279eeb024e602962bc64a772a23176",
+      "retireBurnerRedeem": "0xb16077f98d2969775bfe94216bb83ba8ec1976a0ba3b26b52ae139c5ac724766",
+      "retireDeployerRedeem": "0xf2ed285e18b96be69413151d467ff5e7e4d69bc38d0b8636601c6bd9c6898a5b",
+      "retirePauseLoanBook": "0x0f3b961ec3d9ece9105cf118f67fe3727a9e697f88db3c072540db204c41eea6"
+    }
+  }
 }

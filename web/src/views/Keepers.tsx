@@ -1,11 +1,12 @@
-import { useAccount, useReadContract, useReadContracts, useWriteContract } from "wagmi";
-import type { Address } from "viem";
-import { addresses, addressUrl } from "../config";
+import { useAccount, useBalance, useReadContract, useReadContracts, useWriteContract } from "wagmi";
+import { erc20Abi, type Address } from "viem";
+import { addresses, addressUrl, txUrl } from "../config";
 import { loans, usePrice, useProtocol } from "../hooks/useProtocol";
 import { useAccountState } from "../hooks/useAccountState";
+import { KEEPER, REPO, useKeeperActivity, useKeeperRuns } from "../hooks/useKeeperActivity";
 import { useNow } from "../hooks/useNow";
 import { useTx } from "../tx";
-import { Card, Kicker, healthTone } from "../components/ui";
+import { Card, Kicker, Stat, healthTone } from "../components/ui";
 import { collateralValue, icr } from "../lib/math";
 import { fmtBps, fmtBtc, fmtDuration, fmtMusd, fmtRatio, fmtUsd, shortAddr } from "../lib/format";
 
@@ -95,7 +96,12 @@ export function Keepers() {
         </div>
       </div>
 
-      <Card index="3.1" title="Troves">
+      <div className="grid-2">
+        <BotStatus />
+        <KeeperWallet price={price} />
+      </div>
+
+      <Card index="3.3" title="Troves">
         {rows.length === 0 ? (
           <p className="muted">No open troves yet.</p>
         ) : (
@@ -121,7 +127,196 @@ export function Keepers() {
           </div>
         )}
       </Card>
+
+      <ActivityCard price={price} />
     </div>
+  );
+}
+
+const ago = (unix: number, now: number) => (now - unix < 60 ? "just now" : `${fmtDuration(now - unix)} ago`);
+
+function BotStatus() {
+  const now = useNow();
+  const { data: runs, isError } = useKeeperRuns();
+  const last = runs?.[0];
+  const recent = runs ?? [];
+  const failed = recent.filter((r) => r.conclusion === "failure").length;
+  const lastOk = recent.find((r) => r.conclusion === "success");
+
+  return (
+    <Card index="3.1" title="Hosted keeper" aside={<span className="badge">every 5 min</span>}>
+      {runs === null ? (
+        <p className="muted">
+          The hosted keeper starts once its GitHub Actions workflow is enabled. Until then, run it yourself with{" "}
+          <code>npm start</code> in <code>keeper/</code>.
+        </p>
+      ) : isError ? (
+        <p className="muted">GitHub did not answer. The run history is on GitHub.</p>
+      ) : !last ? (
+        <p className="muted">Loading the bot's runs...</p>
+      ) : (
+        <>
+          <div className="stats stats-2">
+            <Stat
+              label="Last scan"
+              value={last.status === "completed" ? ago(last.createdAt, now) : "Running"}
+              sub={
+                last.conclusion === "failure"
+                  ? "Failed, alert sent"
+                  : last.conclusion === "success"
+                    ? "Succeeded"
+                    : "In progress"
+              }
+              tone={last.conclusion === "failure" ? "bad" : undefined}
+            />
+            <Stat
+              label="Recent runs"
+              value={`${recent.length - failed} of ${recent.length}`}
+              sub={lastOk ? `succeeded; last success ${ago(lastOk.createdAt, now)}` : "succeeded"}
+              tone={failed > 2 ? "warn" : undefined}
+            />
+          </div>
+          <div className="runs" aria-label="Recent runs, newest first">
+            {recent.map((r) => (
+              <a
+                key={r.url}
+                href={r.url}
+                target="_blank"
+                rel="noreferrer"
+                className={`run run-${r.conclusion ?? "pending"}`}
+                title={`${new Date(r.createdAt * 1000).toLocaleString("en-US")}: ${r.conclusion ?? r.status}`}
+              />
+            ))}
+          </div>
+        </>
+      )}
+      <p className="fine">
+        The open-source keeper in <code>keeper/</code> runs on GitHub Actions: it liquidates matured and
+        undercollateralized loans for profit and pays the withdrawal queue. A failed or unprofitable liquidation, a
+        failing scan or low gas sends an alert.{" "}
+        <a href={`https://github.com/${REPO}/actions/workflows/keeper.yml`} target="_blank" rel="noreferrer">
+          Run history
+        </a>
+      </p>
+    </Card>
+  );
+}
+
+function KeeperWallet({ price }: { price: bigint }) {
+  const btc = useBalance({
+    address: KEEPER,
+    query: { refetchInterval: 30_000 },
+  });
+  const musd = useReadContract({
+    address: addresses.musd,
+    abi: erc20Abi,
+    functionName: "balanceOf",
+    args: [KEEPER],
+    query: { refetchInterval: 30_000 },
+  });
+  return (
+    <Card index="3.2" title="Keeper wallet">
+      <div className="stats stats-2">
+        <Stat label="MUSD to repay debts" value={`${fmtMusd(musd.data)}`} sub="Caps what it can liquidate at once" />
+        <Stat
+          label="BTC for gas and rewards"
+          value={fmtBtc(btc.data?.value, 6)}
+          sub={btc.data ? fmtUsd(collateralValue(btc.data.value, price)) : undefined}
+        />
+      </div>
+      <p className="fine">
+        <a href={addressUrl(KEEPER)} target="_blank" rel="noreferrer" className="mono">
+          {KEEPER}
+        </a>
+        <br />
+        Anyone can run a keeper. The contract pays whoever calls <code>liquidate</code> first.
+      </p>
+    </Card>
+  );
+}
+
+const MODE_LABEL = ["", "below 110%", "matured"];
+
+function ActivityCard({ price }: { price: bigint }) {
+  const now = useNow();
+  const { data, isLoading, isError, olderLoading, olderError } = useKeeperActivity();
+  const rows = data ?? [];
+  const liquidations = rows.filter((r) => r.kind === "liquidation");
+  const byKeeper = rows.filter((r) => r.byKeeper).length;
+
+  return (
+    <Card index="3.4" title="Keeper activity" aside={<span className="badge">{rows.length} on chain</span>}>
+      {isLoading ? (
+        <p className="muted">Reading events since launch...</p>
+      ) : isError ? (
+        <p className="muted">Could not read events from the Mezo RPC. Retrying shortly.</p>
+      ) : rows.length === 0 && !olderLoading ? (
+        <p className="muted">No liquidations or queue payments yet.</p>
+      ) : (
+        <>
+          <p className="fine activity-sum">
+            {liquidations.length} liquidation
+            {liquidations.length === 1 ? "" : "s"} and {rows.length - liquidations.length} queue payment
+            {rows.length - liquidations.length === 1 ? "" : "s"} since launch, {byKeeper} by the keeper bot.
+            {olderLoading && " Reading the Wave 1 contracts..."}
+            {olderError && " The Wave 1 contracts could not be read right now."}
+          </p>
+          {rows.length > 0 && (
+            <div className="table-wrap">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>When</th>
+                    <th>What</th>
+                    <th className="num">Paid</th>
+                    <th className="num">Received</th>
+                    <th>By</th>
+                    <th />
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.slice(0, 25).map((r) => (
+                    <tr key={r.hash}>
+                      <td title={new Date(r.time * 1000).toLocaleString("en-US")}>{ago(r.time, now)}</td>
+                      <td>
+                        {r.kind === "liquidation" ? (
+                          <>
+                            Liquidated {shortAddr(r.borrower)}, {MODE_LABEL[r.mode]}
+                            {r.badDebt > 0n && <span className="tone-bad"> ({fmtMusd(r.badDebt)} MUSD bad debt)</span>}
+                          </>
+                        ) : (
+                          <>
+                            Paid {r.requests} queued withdrawal
+                            {r.requests === 1 ? "" : "s"}
+                          </>
+                        )}
+                        {r.wave1 && <span className="badge badge-sm">Wave 1</span>}
+                      </td>
+                      <td className="num">{fmtMusd(r.kind === "liquidation" ? r.repaid : r.assets)} MUSD</td>
+                      <td className="num">
+                        {r.kind === "liquidation" ? (
+                          <span title={`${fmtUsd(collateralValue(r.received, price))} at today's price`}>
+                            {fmtBtc(r.received, 8)} BTC
+                          </span>
+                        ) : (
+                          "-"
+                        )}
+                      </td>
+                      <td>{r.byKeeper ? "Keeper bot" : <span className="mono">{shortAddr(r.by)}</span>}</td>
+                      <td className="num">
+                        <a href={txUrl(r.hash)} target="_blank" rel="noreferrer">
+                          Tx
+                        </a>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>
+      )}
+    </Card>
   );
 }
 

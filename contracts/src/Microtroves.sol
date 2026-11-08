@@ -107,6 +107,9 @@ contract Microtroves is ILoanBook, Ownable2Step, Pausable, ReentrancyGuard {
     // Sum of principal * interestRateBps over all troves, used to accrue `totalInterest`.
     uint256 public rateWeightedPrincipal;
     uint64 public lastGlobalAccrual;
+    // The protocol's share of interest, held here until sent to `feeRecipient`, so a
+    // recipient that cannot receive MUSD never blocks a repayment.
+    uint256 public protocolFees;
 
     event TroveOpened(address indexed borrower, uint256 collateral, uint256 borrowed, uint256 debt);
     event CollateralAdded(address indexed borrower, uint256 amount);
@@ -131,6 +134,7 @@ contract Microtroves is ILoanBook, Ownable2Step, Pausable, ReentrancyGuard {
     );
     event ParamsUpdated(Params params);
     event FeeRecipientUpdated(address feeRecipient);
+    event ProtocolFeesWithdrawn(address indexed to, uint256 amount);
 
     error TroveAlreadyActive();
     error TroveNotActive();
@@ -464,6 +468,15 @@ contract Microtroves is ILoanBook, Ownable2Step, Pausable, ReentrancyGuard {
         emit FeeRecipientUpdated(newFeeRecipient);
     }
 
+    /// @notice Sends the accrued protocol fees to `feeRecipient`. Anyone can call it.
+    function withdrawProtocolFees() external nonReentrant returns (uint256 amount) {
+        amount = protocolFees;
+        if (amount == 0) revert NothingToClaim();
+        protocolFees = 0;
+        emit ProtocolFeesWithdrawn(feeRecipient, amount);
+        musd.safeTransfer(feeRecipient, amount);
+    }
+
     /// @notice Pausing stops new debt only. Repaying, closing, withdrawing and
     ///         liquidating keep working.
     function pause() external onlyOwner {
@@ -563,15 +576,15 @@ contract Microtroves is ILoanBook, Ownable2Step, Pausable, ReentrancyGuard {
         emit Repaid(borrower, payer, toInterest, toPrincipal);
     }
 
-    /// @dev Routes a payment to the vault, minus the protocol's share of the interest.
+    /// @dev Routes a payment to the vault and keeps the protocol's share of the interest.
     function _collect(address payer, uint256 interestPart, uint256 principalPart) internal {
         uint256 protocolCut = (interestPart * params.protocolFeeBps) / BPS;
         uint256 toVault = interestPart + principalPart - protocolCut;
+        protocolFees += protocolCut;
         if (payer == address(this)) {
-            if (protocolCut != 0) musd.safeTransfer(feeRecipient, protocolCut);
             if (toVault != 0) musd.safeTransfer(address(vault), toVault);
         } else {
-            if (protocolCut != 0) musd.safeTransferFrom(payer, feeRecipient, protocolCut);
+            if (protocolCut != 0) musd.safeTransferFrom(payer, address(this), protocolCut);
             if (toVault != 0) musd.safeTransferFrom(payer, address(vault), toVault);
         }
     }

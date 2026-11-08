@@ -7,10 +7,26 @@ import {EIP712} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 
 contract MockMUSD is ERC20, ERC20Permit {
+    // Receivers this token refuses, to test paths where a transfer fails.
+    mapping(address => bool) public blocked;
+
     constructor() ERC20("Mezo USD", "MUSD") ERC20Permit("Mezo USD") {}
 
     function mint(address to, uint256 amount) external {
         _mint(to, amount);
+    }
+
+    function setBlocked(address who, bool isBlocked) external {
+        blocked[who] = isBlocked;
+    }
+
+    /// @dev Like MUSD, refuses transfers to the token contract itself.
+    function _update(address from, address to, uint256 value) internal override {
+        if (from != address(0)) {
+            require(to != address(this), "ERC20: transfer to the contract address");
+            require(!blocked[to], "MockMUSD: receiver blocked");
+        }
+        super._update(from, to, value);
     }
 }
 

@@ -1,6 +1,7 @@
 import { setTimeout as sleep } from "node:timers/promises";
 import { encodeFunctionData, erc20Abi, parseEventLogs, type Address } from "viem";
 import { loanBookAbi, priceFeedAbi, vaultAbi } from "./abi.ts";
+import { alert, recordScan, saveState, summary } from "./alerts.ts";
 import { account, publicClient, send, txUrl } from "./chain.ts";
 import { config } from "./config.ts";
 import { describe, fmtBtc, fmtMusd, fmtUsd, log, shortAddr } from "./format.ts";
@@ -57,17 +58,28 @@ async function tick() {
   const queue = pendingShares > 0n ? `queue waiting with ${fmtMusd(idle)} MUSD idle` : "queue empty";
   const wallet = keeper ? `keeper holds ${fmtMusd(musdBalance)} MUSD and ${fmtBtc(btcBalance)} BTC` : "watching only";
   const key = `${troves}|${queue}|${wallet}`;
+  const status = `BTC ${fmtUsd(price)} · ${troves} · ${queue} · ${wallet}`;
   if (key !== lastStatusKey || Date.now() - lastStatusAt > HEARTBEAT_MS) {
-    log.info(`BTC ${fmtUsd(price)} · ${troves} · ${queue} · ${wallet}`);
+    log.info(status);
     lastStatusKey = key;
     lastStatusAt = Date.now();
   }
+  summary(`${new Date().toISOString()} · ${status}`);
 
-  // Report each skipped trove once, until its reason changes.
+  if (keeper && !config.dryRun && btcBalance < config.minGasBtc) {
+    await alert("warn", "low-gas", `keeper has only ${fmtBtc(btcBalance)} BTC left for gas`, 12);
+  }
+
+  // Report each skipped trove once, until its reason changes. A trove nobody will
+  // liquidate is a risk to lenders, so the unprofitable and underfunded cases alert.
   for (const s of skipped) {
-    if (lastSkip.get(s.borrower) === s.reason) continue;
+    const kind = s.reason.startsWith("earns") ? "unprofitable" : s.reason.startsWith("needs") ? "underfunded" : "limit";
+    if (kind !== "limit") {
+      await alert("warn", `skip:${s.borrower}:${kind}`, `not liquidating ${label(s)}: ${s.reason}`);
+    } else if (lastSkip.get(s.borrower) !== s.reason) {
+      log.info(`skip ${label(s)}: ${s.reason}`);
+    }
     lastSkip.set(s.borrower, s.reason);
-    log.info(`skip ${label(s)}: ${s.reason}`);
   }
   for (const b of lastSkip.keys()) if (!skipped.some((s) => s.borrower === b)) lastSkip.delete(b);
 
@@ -124,13 +136,15 @@ async function liquidateOne(c: Scored, price: bigint) {
     const received = event?.args.collateralToLiquidator ?? c.preview.collateralToLiquidator;
     const gasPaid = receipt.gasUsed * receipt.effectiveGasPrice;
     const profit = ((received - gasPaid) * price) / ONE - repaid;
-    log.info(
+    await alert(
+      profit < 0n ? "warn" : "info",
+      `liq:${receipt.transactionHash}`,
       `liquidated ${label(c)}: repaid ${fmtMusd(repaid)} MUSD, received ${fmtBtc(received)} BTC, ` +
-        `${fmtUsd(profit)} profit after gas  ${txUrl(receipt.transactionHash)}`,
+        `${fmtUsd(profit)} ${profit < 0n ? "LOSS" : "profit"} after gas  ${txUrl(receipt.transactionHash)}`,
     );
     if (event?.args.surplus) log.info(`  ${fmtBtc(event.args.surplus)} BTC stays claimable by the borrower`);
   } catch (err) {
-    log.error(`liquidating ${label(c)} failed: ${describe(err)}`);
+    await alert("error", `fail:${c.borrower}`, `liquidating ${label(c)} failed: ${describe(err)}`, 1);
   }
 }
 
@@ -152,10 +166,15 @@ async function payQueue() {
   );
   const fills = parseEventLogs({ abi: vaultAbi, eventName: "RedeemRequestFilled", logs: receipt.logs });
   const paid = fills.reduce((sum, e) => sum + e.args.assets, 0n);
-  log.info(
+  await alert(
+    "info",
+    `queue:${receipt.transactionHash}`,
     `paid ${fills.length} queued withdrawal${fills.length === 1 ? "" : "s"}, ${fmtMusd(paid)} MUSD  ` +
       txUrl(receipt.transactionHash),
   );
+  for (const d of parseEventLogs({ abi: vaultAbi, eventName: "RedeemPaymentDeferred", logs: receipt.logs })) {
+    log.info(`  request #${d.args.id} could not be paid to ${shortAddr(d.args.receiver)}; its owner can claim it`);
+  }
 }
 
 const stop = new AbortController();
@@ -174,13 +193,26 @@ log.info(
     : "no KEEPER_PRIVATE_KEY, so watching only",
 );
 
+log.info(
+  config.alertWebhook || config.telegram
+    ? `alerts on: ${[config.alertWebhook && "webhook", config.telegram && "Telegram"].filter(Boolean).join(" and ")}`
+    : "alerts off: set ALERT_WEBHOOK_URL or the ALERT_TELEGRAM_* variables to enable them",
+);
+
 for (;;) {
   try {
     await tick();
+    recordScan(true);
   } catch (err) {
+    const streak = recordScan(false);
     log.error(`scan failed: ${describe(err)}`);
+    summary(`${new Date().toISOString()} · scan failed: ${describe(err)}`);
+    if (streak >= config.failureAlertAfter) {
+      await alert("error", "scan-failing", `${streak} scans in a row failed, latest: ${describe(err)}`, 1);
+    }
     if (config.once) process.exitCode = 1;
   }
+  saveState();
   if (config.once || stop.signal.aborted) break;
   try {
     await sleep(config.pollMs, undefined, { signal: stop.signal });

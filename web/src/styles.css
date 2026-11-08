@@ -361,6 +361,37 @@ code {
 .menu-item:hover::after {
   color: var(--signal-ink);
 }
+.wallet-option {
+  align-items: center;
+  gap: 10px;
+}
+.wallet-option::after {
+  margin-left: auto;
+}
+.wallet-icon {
+  width: 22px;
+  height: 22px;
+  flex: none;
+}
+.wallet-icon-letter {
+  display: grid;
+  place-items: center;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--mono);
+  font-size: 12px;
+}
+.wallet-name {
+  display: flex;
+  flex-direction: column;
+}
+.wallet-name small {
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.wallet-option:hover small {
+  color: var(--signal-ink);
+}
 .menu-error {
   color: var(--alarm);
   font-size: 12px;
@@ -1123,6 +1154,274 @@ code {
   }
 }
 
+/* Queue */
+
+.queue {
+  list-style: none;
+  padding: 0;
+  margin: 14px 0 0;
+  border-top: 1px solid var(--rule);
+}
+.queue li {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--rule-soft);
+  font-size: 13px;
+}
+.queue li.muted {
+  display: block;
+}
+.queue-n {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.queue li.is-mine {
+  background: var(--signal-soft);
+  margin: 0 -8px;
+  padding: 8px;
+}
+.queue li.is-mine .queue-n {
+  color: var(--signal);
+}
+
+/* History chart */
+
+.card-wide .card-head .segmented {
+  margin-bottom: 0;
+  /* Shrink-wrapped in the header, so spacing cannot come from space-between on phones. */
+  gap: 14px;
+}
+.card-wide .card-head .segmented button {
+  padding-right: 0;
+  margin-right: 0;
+}
+.chart {
+  position: relative;
+  margin: 22px 0 6px;
+}
+.chart svg {
+  display: block;
+  overflow: visible;
+  touch-action: pan-y;
+}
+.chart svg:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 4px;
+}
+.chart-grid {
+  stroke: var(--rule-soft);
+  stroke-width: 1;
+}
+.chart-axis {
+  font-family: var(--mono);
+  font-size: 11px;
+  fill: var(--ink-3);
+}
+.chart-line {
+  fill: none;
+  stroke: var(--signal);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.chart-area {
+  fill: var(--signal);
+  opacity: 0.1;
+}
+.chart-dot {
+  fill: var(--signal);
+  stroke: var(--panel);
+  stroke-width: 2;
+}
+.chart-end {
+  font-size: 12px;
+  font-weight: 600;
+  fill: var(--ink);
+}
+.chart-handoff {
+  stroke: var(--ink-3);
+  stroke-width: 1;
+}
+.chart-cross {
+  stroke: var(--ink);
+  stroke-width: 1;
+}
+.chart-tip {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  pointer-events: none;
+  background: var(--ink);
+  color: var(--paper);
+  padding: 6px 10px;
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  white-space: nowrap;
+}
+.chart-tip strong {
+  font-size: 15px;
+  font-weight: 600;
+}
+.chart-tip .muted {
+  color: var(--ink-3);
+}
+.chart-empty {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--ink-2);
+  padding: 60px 0;
+  text-align: center;
+}
+.table-toggle {
+  margin: 10px 0 4px;
+  font-size: 13px;
+}
+.table-toggle summary {
+  cursor: pointer;
+  color: var(--signal);
+  margin-bottom: 10px;
+}
+
+/* First-loan guide */
+
+.guide-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+}
+.guide-steps li {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  color: var(--ink-2);
+}
+.guide-steps strong {
+  display: block;
+  font-weight: 500;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.guide-steps p {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.guide-n {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  font-family: var(--mono);
+  font-size: 13px;
+  border: 1px solid var(--ink-3);
+  color: var(--ink-2);
+}
+.guide-steps .is-current .guide-n {
+  border-color: var(--signal);
+  background: var(--signal);
+  color: var(--signal-ink);
+}
+.guide-steps .is-done .guide-n {
+  border-color: var(--ink-3);
+  background: var(--rule-soft);
+  color: var(--ink);
+}
+.guide-steps .is-done p {
+  color: var(--ink-3);
+}
+.guide-problem {
+  display: block;
+  margin-top: 6px;
+  color: var(--alarm);
+}
+.glossary {
+  margin-top: 18px;
+  border-top: 1px solid var(--rule-soft);
+  padding-top: 12px;
+  font-size: 14px;
+}
+.glossary summary {
+  cursor: pointer;
+  color: var(--ink-2);
+}
+.glossary dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 8px 20px;
+  margin: 12px 0 0;
+}
+.glossary dt {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--ink);
+}
+.glossary dd {
+  margin: 0;
+  color: var(--ink-2);
+  line-height: 1.5;
+}
+.guide-reopen,
+.link-btn {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  font-size: 13px;
+  color: var(--signal);
+  cursor: pointer;
+  text-align: left;
+}
+.guide-reopen {
+  margin-bottom: 4px;
+}
+.guide-reopen:hover,
+.link-btn:hover {
+  text-decoration: underline;
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Keeper runs: one square per run, newest first */
+
+.runs {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin: 4px 0 0;
+}
+.run {
+  width: 14px;
+  height: 14px;
+  background: var(--signal);
+}
+.run-failure {
+  background: var(--alarm);
+}
+.run-pending,
+.run-cancelled,
+.run-skipped {
+  background: transparent;
+  border: 2px solid var(--ink-3);
+}
+.activity-sum {
+  margin-top: 0;
+}
+
 /* Footer */
 
 .footer {
@@ -1170,6 +1469,9 @@ code {
   }
   .spec:nth-child(n + 3) {
     border-top: 1px solid var(--rule);
+  }
+  .guide-steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -1232,6 +1534,28 @@ code {
   .ratio-block {
     grid-template-columns: minmax(0, 1fr);
     gap: 14px;
+  }
+  .guide-steps {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+  /* Finished steps shrink to their title so the form stays close. */
+  .guide-steps .is-done {
+    align-items: center;
+  }
+  .guide-steps .is-done p,
+  .guide-steps .is-done strong {
+    margin: 0;
+  }
+  .guide-steps .is-done p {
+    display: none;
+  }
+  .glossary dl {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
+  }
+  .glossary dd {
+    margin-bottom: 10px;
   }
   .menu {
     position: fixed;

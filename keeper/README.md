@@ -1,6 +1,6 @@
 # Microtrove keeper
 
-A bot that keeps the loan book healthy. Every 30 seconds it:
+A bot that keeps the loan book healthy. On every scan it:
 
 1. Asks `Microtroves.getLiquidatable` for troves that are below the 110% minimum ratio
    or past their due date.
@@ -14,9 +14,13 @@ A bot that keeps the loan book healthy. Every 30 seconds it:
 Healthy troves are never touched. Anyone can run a keeper; the contract pays whoever
 calls `liquidate` first.
 
+It runs around the clock on GitHub Actions, every five minutes, and alerts a chat channel
+when something needs a person. Its runs, wallet and on-chain activity are on the app's
+[Keepers page](https://microtrove.vercel.app/#keepers).
+
 ## Live on Mezo Testnet
 
-On Oct 25, 2026 this keeper liquidated a matured 40 MUSD loan on its own. It spotted the
+On Oct 25, 2026 (on the Wave 1 contracts) this keeper liquidated a matured 40 MUSD loan on its own. It spotted the
 loan 36 seconds after its due date, and the liquidation landed in a block 48 seconds after it. The term had been shortened to 1 hour for that one borrow so it
 would mature during the demo. The run's log, with the startup banner and four 10-minute
 status lines (14:11 to 14:42) trimmed:
@@ -61,7 +65,7 @@ npm start              # scan every 30 seconds until stopped
 | `npm start` | Runs continuously. Ctrl+C stops it after the current scan. |
 | `npm run once` | One scan, then exits. Exits with 1 if the scan failed, so it suits cron. |
 | `npm run watch` | Runs continuously without sending anything and logs what it would do. |
-| `npm test` | Unit tests for the liquidation planner. |
+| `npm test` | Unit tests for the liquidation planner and the alerts. |
 
 Without `KEEPER_PRIVATE_KEY` the keeper only watches.
 
@@ -73,8 +77,53 @@ Without `KEEPER_PRIVATE_KEY` the keeper only watches.
 | `MIN_PROFIT_MUSD` | `0.01` | Skip liquidations that earn less than this after gas |
 | `MAX_PER_TICK` | `10` | Most liquidations sent per scan |
 | `PROCESS_QUEUE` | `true` | Pay queued vault withdrawals |
+| `ALERT_WEBHOOK_URL` | none | Discord or Slack incoming webhook for alerts |
+| `ALERT_TELEGRAM_BOT_TOKEN`, `ALERT_TELEGRAM_CHAT_ID` | none | Telegram bot and chat for alerts |
+| `MIN_GAS_BTC` | `0.0002` | Warn when the keeper holds less BTC than this |
+| `FAILURE_ALERT_AFTER` | `3` | Failed scans in a row before an alert |
+| `STATE_FILE` | none | Remembers sent alerts and the failure streak between runs |
 
 Contract addresses come from [`deployments/mezo-testnet.json`](../deployments/mezo-testnet.json).
+
+## Alerts
+
+Every alert is logged. With a webhook or a Telegram bot set, it is also posted there.
+
+| Alert | Level | When |
+| --- | --- | --- |
+| Liquidation failed | error | A liquidation transaction reverted or never landed. Repeats hourly while it keeps failing. |
+| Scans failing | error | `FAILURE_ALERT_AFTER` scans in a row failed, for example the RPC is down |
+| Liquidation skipped | warn | A trove is liquidatable but would not cover gas plus `MIN_PROFIT_MUSD`, or the keeper lacks the MUSD to repay it |
+| Liquidation lost money | warn | A liquidation landed but the BTC received was worth less than the MUSD repaid plus gas |
+| Low gas | warn | The keeper's BTC is below `MIN_GAS_BTC` |
+| Liquidated, queue paid | info | Each successful liquidation and queue payment, with its transaction |
+
+The same alert is not repeated within six hours (one hour for errors, twelve for low gas),
+so a stuck trove does not flood the channel. With `STATE_FILE` set, that memory survives between runs,
+which is what makes one-scan-per-run hosting work.
+
+## Hosting
+
+**GitHub Actions** (what Microtrove uses). [`.github/workflows/keeper.yml`](../.github/workflows/keeper.yml)
+runs `npm run once` every five minutes and keeps `STATE_FILE` in the Actions cache. A
+failed scan fails the run, so it shows red in the run history and on the Keepers page.
+Add the secrets once, from the repository root:
+
+```bash
+gh secret set KEEPER_PRIVATE_KEY          # paste the testnet key when asked
+gh secret set ALERT_WEBHOOK_URL           # optional
+gh workflow run keeper.yml                # first run now instead of waiting
+```
+
+GitHub may start scheduled runs a few minutes late under load, and pauses them in a
+repository with no commits for 60 days.
+
+**Any container host** (Fly.io, Railway, a VPS) for scans every 30 seconds:
+
+```bash
+docker build -f keeper/Dockerfile -t microtrove-keeper .   # from the repository root
+docker run --env-file keeper/.env microtrove-keeper
+```
 
 ## How it stays safe
 
@@ -97,4 +146,7 @@ Contract addresses come from [`deployments/mezo-testnet.json`](../deployments/me
 | `src/chain.ts` | viem clients and a send that tolerates empty RPC responses |
 | `src/config.ts` | Environment variables and deployment addresses |
 | `src/abi.ts` | The few functions and events the keeper uses |
+| `src/alerts.ts` | Alerts to a webhook or Telegram, with repeat suppression and the state file |
 | `test/strategy.test.ts` | Planner tests: ordering, budget, gas, limits, underwater troves |
+| `test/alerts.test.ts` | Alert delivery, repeat suppression and the state file, against a local HTTP sink |
+| `Dockerfile` | Always-on container image |

@@ -30,12 +30,13 @@ export function useAccountState() {
       { ...vault, functionName: "balanceOf", args: [who] },
       { ...vault, functionName: "maxWithdraw", args: [who] },
       { address: addresses.troveManager, abi: troveManagerAbi, functionName: "getTroveStatus", args: [who] },
+      { ...vault, functionName: "claimable", args: [who] },
     ],
     query: { enabled: !!address, refetchInterval: 10_000 },
   });
 
   if (!address || !q.data) return { address, data: undefined, isLoading: q.isLoading };
-  const [t, surplus, musd, shares, maxWithdraw, musdTroveStatus] = q.data;
+  const [t, surplus, musd, shares, maxWithdraw, musdTroveStatus, claimable] = q.data;
   const trove: Trove = {
     active: t[0],
     collateral: t[1],
@@ -53,6 +54,8 @@ export function useAccountState() {
       musd,
       shares,
       maxWithdraw,
+      // Queued withdrawals whose payment the receiver could not take, held for this wallet.
+      claimable,
       surplus,
       trove,
       // TroveManager.Status: 1 = active.

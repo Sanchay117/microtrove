@@ -18,6 +18,8 @@ contract Handler is Test {
     address[] public borrowers;
     address[] public lenders;
     address public keeper = makeAddr("keeper");
+    // A receiver MUSD refuses, so some queued payments are deferred.
+    address public refused = makeAddr("refused");
     mapping(string => uint256) public successes;
 
     constructor(Microtroves _loans, MicrotroveVault _vault, MockMUSD _musd, MockPriceFeed _feed) {
@@ -41,6 +43,7 @@ contract Handler is Test {
         vm.deal(keeper, 1 ether);
         vm.prank(keeper);
         musd.approve(address(loans), type(uint256).max);
+        musd.setBlocked(refused, true);
     }
 
     function borrowerCount() external view returns (uint256) {
@@ -179,10 +182,30 @@ contract Handler is Test {
         address l = _lender(seed);
         uint256 shares = (vault.balanceOf(l) * bound(fraction, 1, 100)) / 100;
         if (shares == 0) return;
+        // One request in four pays a receiver MUSD refuses.
+        address receiver = seed % 4 == 0 ? refused : l;
         vm.prank(l);
-        try vault.requestRedeem(shares, l) {
+        try vault.requestRedeem(shares, receiver) {
             successes["requestRedeem"]++;
         } catch {}
+    }
+
+    function claim(uint256 seed) external {
+        address l = _lender(seed);
+        for (uint256 i; i < lenders.length; ++i) {
+            if (vault.claimable(lenders[i]) != 0) {
+                l = lenders[i];
+                break;
+            }
+        }
+        vm.prank(l);
+        try vault.claim(l) {
+            successes["claim"]++;
+        } catch {}
+    }
+
+    function withdrawProtocolFees() external {
+        try loans.withdrawProtocolFees() {} catch {}
     }
 
     function cancelRequest(uint256 seed) external {

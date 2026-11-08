@@ -127,6 +127,111 @@ contract MicrotroveVaultTest is BaseTest {
         assertEq(vault.queueHead(), 2);
     }
 
+    /// @dev Wave 1 review: a request paying MUSD itself made processQueue revert forever.
+    function test_RequestRedeem_RejectsMusdAndVaultAsReceiver() public {
+        uint256 shares = vault.balanceOf(lender);
+        vm.startPrank(lender);
+        vm.expectRevert(MicrotroveVault.InvalidReceiver.selector);
+        vault.requestRedeem(shares, address(musd));
+        vm.expectRevert(MicrotroveVault.InvalidReceiver.selector);
+        vault.requestRedeem(shares, address(vault));
+        vm.expectRevert(MicrotroveVault.ZeroAddress.selector);
+        vault.requestRedeem(shares, address(0));
+        vm.stopPrank();
+    }
+
+    /// @dev Any receiver MUSD refuses is set aside for its owner and the queue moves on.
+    function test_ProcessQueue_RefusedPaymentDoesNotBlockLaterRequests() public {
+        address refused = makeAddr("refused");
+        address rescue = makeAddr("rescue");
+        uint256 lender2Shares = _deposit(lender2, 100e18);
+        uint256 shares = vault.balanceOf(lender);
+
+        vm.prank(lender);
+        uint256 firstId = vault.requestRedeem(shares, refused);
+        vm.prank(lender2);
+        vault.requestRedeem(lender2Shares, lender2);
+        musd.setBlocked(refused, true);
+
+        vm.expectEmit(address(vault));
+        emit MicrotroveVault.RedeemPaymentDeferred(firstId, lender, refused, 500e18);
+        assertEq(vault.processQueue(10), 2);
+
+        assertEq(musd.balanceOf(lender2), 100e18, "the request behind it is paid");
+        assertEq(vault.queueHead(), 2);
+        assertEq(vault.pendingShares(), 0);
+        assertEq(vault.claimable(lender), 500e18);
+        assertEq(vault.totalClaimable(), 500e18);
+        // The set-aside MUSD belongs to the lender, not to the vault.
+        assertEq(vault.idleAssets(), 0);
+        assertEq(vault.totalAssets(), 0);
+
+        vm.prank(bob);
+        vm.expectRevert(MicrotroveVault.NothingToClaim.selector);
+        vault.claim(bob);
+
+        vm.prank(lender);
+        assertEq(vault.claim(rescue), 500e18);
+        assertEq(musd.balanceOf(rescue), 500e18);
+        assertEq(vault.totalClaimable(), 0);
+    }
+
+    /// @dev Deferred MUSD is never lent out or counted in the share price.
+    function test_DeferredPaymentIsNotLentOrPriced() public {
+        address refused = makeAddr("refused");
+        musd.setBlocked(refused, true);
+        uint256 half = vault.balanceOf(lender) / 2;
+        vm.prank(lender);
+        vault.requestRedeem(half, refused);
+        vault.processQueue(1);
+
+        assertEq(vault.claimable(lender), 250e18);
+        assertEq(vault.totalAssets(), 250e18);
+        assertEq(vault.lendableLiquidity(), 250e18);
+        assertEq(vault.convertToAssets(vault.balanceOf(lender)), 250e18);
+
+        _open(bob, 400e18, 190e18);
+        uint256 collateral = btcFor(200e18);
+        vm.prank(carol);
+        vm.expectRevert(
+            abi.encodeWithSelector(MicrotroveVault.InsufficientLiquidity.selector, 61e18, 60e18)
+        );
+        loans.open{value: collateral}(61e18);
+    }
+
+    /// @dev A one-wei request cannot shut instant withdrawals off for everyone.
+    function test_InstantWithdrawalsUseIdleTheQueueDoesNotNeed() public {
+        _deposit(lender2, 100e18);
+        vm.prank(lender2);
+        vault.requestRedeem(1, lender2);
+
+        assertEq(vault.maxWithdraw(lender), 500e18);
+        vm.prank(lender);
+        vault.withdraw(500e18, lender, lender);
+        assertEq(musd.balanceOf(lender), 500e18);
+
+        // The queued wei is still covered.
+        vault.processQueue(1);
+        assertEq(vault.pendingShares(), 0);
+    }
+
+    function test_QueueViewsShowEachLendersPlace() public {
+        _lendMost();
+        uint256 lender2Shares = _deposit(lender2, 100e18);
+        uint256 lenderShares = vault.balanceOf(lender);
+        vm.prank(lender);
+        vault.requestRedeem(lenderShares, lender);
+        vm.prank(lender2);
+        uint256 second = vault.requestRedeem(lender2Shares, lender2);
+
+        MicrotroveVault.RedeemRequest[] memory page = vault.getRequests(0, 10);
+        assertEq(page.length, 2);
+        assertEq(page[1].owner, lender2);
+        assertEq(vault.assetsAhead(0), 0);
+        assertApproxEqAbs(vault.assetsAhead(second), vault.convertToAssets(lenderShares), 1);
+        assertEq(vault.getRequests(5, 10).length, 0);
+    }
+
     function test_LateDepositorDoesNotCaptureEarlierInterest() public {
         _lendMost();
         vm.warp(START + 60 days);

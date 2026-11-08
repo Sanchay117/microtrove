@@ -48,6 +48,36 @@ export function Header({ tab, onTab }: { tab: Tab; onTab: (tab: Tab) => void }) 
   );
 }
 
+type Connector = ReturnType<typeof useConnect>["connectors"][number];
+
+const hasInjected = typeof window !== "undefined" && "ethereum" in window;
+const isPhone = typeof navigator !== "undefined" && /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+// On a phone with no wallet browser, MetaMask's universal link reopens this page inside the app.
+const openInApp =
+  isPhone && !hasInjected && typeof location !== "undefined"
+    ? `https://metamask.app.link/dapp/${location.host}${location.pathname}${location.hash}`
+    : undefined;
+
+/**
+ * Wallets that announced themselves over EIP-6963 come first with their own names and icons. The generic
+ * injected entry only shows when nothing announced, and Coinbase's SDK only when its extension did not.
+ */
+function walletOptions(connectors: readonly Connector[]) {
+  const announced = connectors.filter((c) => c.type === "injected" && c.id !== "injected");
+  const options: { connector: Connector; label: string; hint?: string }[] = announced.map((c) => ({
+    connector: c,
+    label: c.name,
+  }));
+  for (const c of connectors) {
+    if (c.id === "injected" && announced.length === 0 && hasInjected) options.push({ connector: c, label: "Browser wallet" });
+    if (c.id === "coinbaseWalletSDK" && !announced.some((a) => a.id === "com.coinbase.wallet"))
+      options.push({ connector: c, label: "Coinbase Wallet", hint: hasInjected ? undefined : "Extension or mobile app" });
+    if (c.id === "walletConnect") options.push({ connector: c, label: "WalletConnect", hint: "Scan with a phone wallet" });
+    if (c.id === "burner") options.push({ connector: c, label: c.name, hint: "Local testing only" });
+  }
+  return options;
+}
+
 function WalletButton() {
   const { address, chainId, isConnected, connector } = useAccount();
   const { connectors, connect, isPending, error } = useConnect();
@@ -61,8 +91,14 @@ function WalletButton() {
     const close = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     };
+    // The first-loan guide's "Connect wallet" button opens this menu.
+    const show = () => setOpen(true);
     document.addEventListener("mousedown", close);
-    return () => document.removeEventListener("mousedown", close);
+    window.addEventListener("microtrove:connect", show);
+    return () => {
+      document.removeEventListener("mousedown", close);
+      window.removeEventListener("microtrove:connect", show);
+    };
   }, []);
 
   if (isConnected && chainId !== mezoTestnet.id) {
@@ -109,15 +145,36 @@ function WalletButton() {
           ) : (
             <>
               <div className="menu-label">Choose a wallet</div>
-              {connectors.map((c) => (
+              {walletOptions(connectors).map(({ connector: c, label, hint }) => (
                 <button
                   key={c.uid}
-                  className="menu-item"
+                  className="menu-item wallet-option"
                   onClick={() => connect({ connector: c, chainId: mezoTestnet.id }, { onSuccess: () => setOpen(false) })}
                 >
-                  {c.name === "Injected" ? "Browser wallet" : c.name}
+                  {c.icon ? (
+                    <img className="wallet-icon" src={c.icon} alt="" />
+                  ) : (
+                    <span className="wallet-icon wallet-icon-letter" aria-hidden>
+                      {label[0]}
+                    </span>
+                  )}
+                  <span className="wallet-name">
+                    {label}
+                    {hint && <small>{hint}</small>}
+                  </span>
                 </button>
               ))}
+              {openInApp && (
+                <a className="menu-item wallet-option" href={openInApp}>
+                  <span className="wallet-icon wallet-icon-letter" aria-hidden>
+                    M
+                  </span>
+                  <span className="wallet-name">
+                    Open in MetaMask
+                    <small>Use the app's built-in browser</small>
+                  </span>
+                </a>
+              )}
               {error && <div className="menu-error">{error.message.split("\n")[0]}</div>}
               <div className="menu-foot">
                 Works with any EVM wallet. The app adds Mezo Testnet (chain 31611) for you.

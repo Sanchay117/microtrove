@@ -19,6 +19,8 @@ import { fmtBps, fmtBtc, fmtDate, fmtMusd, fmtPrice, fmtRatio, fmtUsd, parseAmou
 import { FAUCET } from "../config";
 import { GAS_RESERVE, maxBorrowFor } from "../lib/loan";
 import { Position } from "./Position";
+import { FirstLoanGuide } from "./FirstLoan";
+import { mezoTestnet } from "viem/chains";
 
 export function Borrow() {
   const { price } = usePrice();
@@ -111,7 +113,7 @@ function OpenForm({ params, price, lendable, paused }: {
   lendable: bigint;
   paused: boolean;
 }) {
-  const { isConnected } = useAccount();
+  const { isConnected, chainId } = useAccount();
   const { data: account } = useAccountState();
   const { run, busy } = useTx();
   const { writeContractAsync } = useWriteContract();
@@ -159,79 +161,94 @@ function OpenForm({ params, price, lendable, paused }: {
   };
 
   return (
-    <div className="grid-2">
-      <Card index="1.1" title="Open a micro trove">
-        <div className="form">
-          <AmountInput
-            label="Borrow"
-            unit="MUSD"
-            value={borrowIn}
-            onChange={setBorrowIn}
-            hint={`${fmtMusd(params.minDebt, 0)} to ${fmtMusd(params.maxDebt, 0)} MUSD`}
-            onMax={() => setBorrowIn(toInput(maxBorrow, 2))}
-          />
-          <AmountInput
-            label="Lock as collateral"
-            unit="BTC"
-            value={collDisplay}
-            onChange={(v) => {
-              setRatioPick(null);
-              setCollIn(v);
-            }}
-            hint={isConnected ? `Wallet: ${fmtBtc(btc)} BTC` : undefined}
-            onMax={isConnected ? () => { setRatioPick(null); setCollIn(toInput(btc > GAS_RESERVE ? btc - GAS_RESERVE : 0n, 8)); } : undefined}
-          />
-          <div className="presets">
-            <span>Collateral ratio</span>
-            {RATIO_PRESETS.map((r) => (
-              <button
-                key={r.toString()}
-                type="button"
-                className={`chip ${ratioPick === r ? "chip-on" : ""}`}
-                onClick={() => setRatioPick(r)}
-              >
-                {r.toString()}%
-              </button>
-            ))}
+    <>
+      <FirstLoanGuide
+        params={params}
+        connected={isConnected}
+        wrongChain={isConnected && chainId !== mezoTestnet.id}
+        btc={btc}
+        borrow={borrow}
+        coll={coll}
+        value={value}
+        liqPrice={liqPrice}
+        price={price}
+        ready={isConnected && borrow > 0n && !error}
+        problem={error}
+      />
+      <div className="grid-2">
+        <Card index="1.1" title="Open a micro trove">
+          <div className="form">
+            <AmountInput
+              label="Borrow"
+              unit="MUSD"
+              value={borrowIn}
+              onChange={setBorrowIn}
+              hint={`${fmtMusd(params.minDebt, 0)} to ${fmtMusd(params.maxDebt, 0)} MUSD`}
+              onMax={() => setBorrowIn(toInput(maxBorrow, 2))}
+            />
+            <AmountInput
+              label="Lock as collateral"
+              unit="BTC"
+              value={collDisplay}
+              onChange={(v) => {
+                setRatioPick(null);
+                setCollIn(v);
+              }}
+              hint={isConnected ? `Wallet: ${fmtBtc(btc)} BTC` : undefined}
+              onMax={isConnected ? () => { setRatioPick(null); setCollIn(toInput(btc > GAS_RESERVE ? btc - GAS_RESERVE : 0n, 8)); } : undefined}
+            />
+            <div className="presets">
+              <span>Collateral ratio</span>
+              {RATIO_PRESETS.map((r) => (
+                <button
+                  key={r.toString()}
+                  type="button"
+                  className={`chip ${ratioPick === r ? "chip-on" : ""}`}
+                  onClick={() => setRatioPick(r)}
+                >
+                  {r.toString()}%
+                </button>
+              ))}
+            </div>
+            {!isConnected ? (
+              <Notice>Connect a wallet on Mezo Testnet to open a trove.</Notice>
+            ) : btc === 0n ? (
+              <Notice tone="warn">
+                Your wallet has no testnet BTC. <a href={FAUCET} target="_blank" rel="noreferrer">Get some from the Mezo faucet</a>.
+              </Notice>
+            ) : null}
+            <button className="btn btn-primary btn-lg" disabled={!isConnected || !!error || busy} onClick={submit}>
+              {error && isConnected ? error : borrow > 0n ? `Lock BTC and borrow ${fmtMusd(borrow)} MUSD` : "Open without borrowing"}
+            </button>
           </div>
-          {!isConnected ? (
-            <Notice>Connect a wallet on Mezo Testnet to open a trove.</Notice>
-          ) : btc === 0n ? (
-            <Notice tone="warn">
-              Your wallet has no testnet BTC. <a href={FAUCET} target="_blank" rel="noreferrer">Get some from the Mezo faucet</a>.
-            </Notice>
-          ) : null}
-          <button className="btn btn-primary btn-lg" disabled={!isConnected || !!error || busy} onClick={submit}>
-            {error && isConnected ? error : borrow > 0n ? `Lock BTC and borrow ${fmtMusd(borrow)} MUSD` : "Open without borrowing"}
-          </button>
-        </div>
-      </Card>
+        </Card>
 
-      <Card index="1.2" title="Your loan">
-        <div className="summary">
-          <div className="summary-ratio">
-            <div className="stat-label">Collateral ratio</div>
-            <RatioFigure ratio={ratio} className={`tone-${healthTone(ratio, params.mcr)}`} />
-            <HealthBar ratio={ratio} mcr={params.mcr} maxCr={params.maxCr} />
+        <Card index="1.2" title="Your loan">
+          <div className="summary">
+            <div className="summary-ratio">
+              <div className="stat-label">Collateral ratio</div>
+              <RatioFigure ratio={ratio} className={`tone-${healthTone(ratio, params.mcr)}`} />
+              <HealthBar ratio={ratio} mcr={params.mcr} maxCr={params.maxCr} />
+            </div>
+            <Row label="Collateral value" value={fmtUsd(value)} />
+            <Row label="You receive" value={`${fmtMusd(borrow)} MUSD`} />
+            <Row label={`Issuance fee (${fmtBps(params.issuanceFeeBps)})`} value={`${fmtMusd(fee)} MUSD`} />
+            <Row label="Debt" value={`${fmtMusd(debt)} MUSD`} />
+            <Row label="Interest if held to maturity" value={`${fmtMusd(interest)} MUSD`} />
+            <Row label="Due by" value={debt > 0n ? fmtDate(maturity) : "-"} />
+            <Row
+              label="Liquidated if BTC falls below"
+              value={liqPrice ? fmtPrice(liqPrice) : "-"}
+              tone={liqPrice && liqPrice * 100n > price * 85n ? "warn" : undefined}
+            />
+            <p className="fine">
+              Repay any time with no penalty. If the loan is still open at maturity, a keeper can
+              repay it and take BTC worth the debt plus {fmtBps(params.expiryBonusBps)}; the rest
+              of your BTC stays claimable.
+            </p>
           </div>
-          <Row label="Collateral value" value={fmtUsd(value)} />
-          <Row label="You receive" value={`${fmtMusd(borrow)} MUSD`} />
-          <Row label={`Issuance fee (${fmtBps(params.issuanceFeeBps)})`} value={`${fmtMusd(fee)} MUSD`} />
-          <Row label="Debt" value={`${fmtMusd(debt)} MUSD`} />
-          <Row label="Interest if held to maturity" value={`${fmtMusd(interest)} MUSD`} />
-          <Row label="Due by" value={debt > 0n ? fmtDate(maturity) : "-"} />
-          <Row
-            label="Liquidated if BTC falls below"
-            value={liqPrice ? fmtPrice(liqPrice) : "-"}
-            tone={liqPrice && liqPrice * 100n > price * 85n ? "warn" : undefined}
-          />
-          <p className="fine">
-            Repay any time with no penalty. If the loan is still open at maturity, a keeper can
-            repay it and take BTC worth the debt plus {fmtBps(params.expiryBonusBps)}; the rest
-            of your BTC stays claimable.
-          </p>
-        </div>
-      </Card>
-    </div>
+        </Card>
+      </div>
+    </>
   );
 }
