@@ -2,7 +2,7 @@
 
 **Borrow 25 to 200 MUSD against bitcoin on Mezo, funded by anyone who lends MUSD.**
 
-[Try it on Mezo Testnet](https://microtrove.vercel.app) · [Watch the two-minute demo](https://youtu.be/pOMobneJlXk) · [Read the deck](https://claude.ai/artifact/KBA2DRVGLdXY3sT8kkgfsS)
+[Try it on Mezo Testnet](https://microtrove.vercel.app) · [Watch the two-minute demo](https://youtu.be/pOMobneJlXk) · [Read the deck](https://drive.google.com/file/d/1yaoCXQWbPMoU9BGECrD_E65BFebfAubH/view?usp=sharing)
 
 An MUSD trove needs at least 1,800 MUSD of debt, so a newcomer has to lock about $2,000 of BTC to
 try it. Microtrove builds Mezo's own unshipped design for small loans,
@@ -25,6 +25,11 @@ Both are verified on Sourcify and wired to the live MUSD, PriceFeed and
 BorrowerOperationsSignatures contracts. The vault is seeded with 1,500 MUSD borrowed from a
 real MUSD trove.
 
+Promotion has run live on these contracts from the web app. A 100 MUSD micro loan became a full
+MUSD trove with 1,800 MUSD of debt and 0.0423 BTC in
+[one transaction](https://explorer.test.mezo.org/tx/0x9f1a1aae9d3d0106e48dddae8ef4bf22c4e48cebad975a48c9f05dae139b9642),
+which repaid the micro loan and sent the borrower the other 1,699.50 MUSD.
+
 These are the Wave 2 contracts, redeployed after the Wave 1 review. The Wave 1 pair was
 emptied and paused; its addresses and every transaction are kept under `wave1` in
 [`deployments/mezo-testnet.json`](deployments/mezo-testnet.json). On those contracts, every
@@ -33,7 +38,8 @@ step ran on chain:
 - Lenders deposited and withdrew, both instantly and through the queue.
 - The [keeper bot](keeper) liquidated a matured loan
   [48 seconds after its due date](https://explorer.test.mezo.org/tx/0xfe7a0c608465370d633178d33ef1d7696ad057026eb36172b0f28c32a48dcd51),
-  for a $3.98 profit.
+  for a $3.98 profit. It was a demo loan whose term we cut to one hour so it would mature
+  during the run.
 - The borrower claimed the rest of their BTC from the web app.
 
 The app's Keepers page lists every liquidation and queue payment across both deployments.
@@ -43,11 +49,15 @@ The app's Keepers page lists every liquidation and queue payment across both dep
 | Wave 1 review | Wave 2 |
 | --- | --- |
 | **Critical:** a lender could queue a withdrawal with MUSD itself as the receiver. MUSD refuses transfers to itself, so `processQueue` would revert forever and stop all withdrawals. | `requestRedeem` rejects MUSD and the vault as receivers. If a payment is still refused, the shares are burned, the MUSD is set aside for the owner to `claim`, and the queue moves on. Tested against real MUSD on a fork. |
-| Promotion through `openTroveWithSignature` had never run against Mezo's contracts. | Six fork tests run against Mezo Testnet's live contracts: a lender's MUSD from a real trove, promotion, rejecting a signature made for other amounts, closing with a real MUSD permit, the queue fix and a keeper liquidation. |
+| Promotion through `openTroveWithSignature` had never run against Mezo's contracts. | Six fork tests run against Mezo Testnet's live contracts: a lender's MUSD from a real trove, promotion, rejecting a signature made for other amounts, closing with a real MUSD permit, the queue fix and a keeper liquidation. Promotion has also run live from the web app ([transaction](https://explorer.test.mezo.org/tx/0x9f1a1aae9d3d0106e48dddae8ef4bf22c4e48cebad975a48c9f05dae139b9642)). |
 | The protocol fee was 0. | 10% of interest goes to the protocol, like a reserve factor. Lenders keep 90% plus every issuance fee. |
-| No deck, injected wallets only. | [A short deck](https://claude.ai/artifact/KBA2DRVGLdXY3sT8kkgfsS). The app lists every EIP-6963 wallet with its icon, plus Coinbase Wallet, WalletConnect and a link that opens it in MetaMask on phones. |
+| No deck, injected wallets only. | [A short deck](https://drive.google.com/file/d/1yaoCXQWbPMoU9BGECrD_E65BFebfAubH/view?usp=sharing). The app lists every EIP-6963 wallet with its icon, plus Coinbase Wallet, WalletConnect and a link that opens it in MetaMask on phones. |
 
 And the Wave 2 commitments:
+- **Promotion live from the web app.** The borrower signed MUSD's `OpenTrove` message and
+  [one transaction](https://explorer.test.mezo.org/tx/0x9f1a1aae9d3d0106e48dddae8ef4bf22c4e48cebad975a48c9f05dae139b9642)
+  opened a full MUSD trove with 1,800 MUSD of debt, repaid their 100 MUSD micro loan and sent
+  them 1,699.50 MUSD.
 - **One-click repay and close.** The app signs an EIP-2612 permit for MUSD, so a repayment is one
   signature and one transaction. Smart-contract wallets fall back to an approval.
 - **Hosted keeper with alerts.** A GitHub Actions workflow runs the keeper every five minutes
@@ -58,8 +68,6 @@ And the Wave 2 commitments:
   lender's place in the withdrawal queue and the MUSD ahead of them.
 - **A guided first loan** for people new to MUSD, which checks off each step from live
   wallet state and explains the numbers they pick, plus a phone layout.
-- **Promotion live from the web app.** Next, once the test wallet holds enough testnet BTC
-  for a full trove.
 
 ## How it sustains itself
 

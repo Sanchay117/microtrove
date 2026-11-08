@@ -40,7 +40,9 @@
     "appOpenBorrow50Musd": "0xb983fd89ef28f81064028503094d1f938c2110f1fd40f9132aafc8901ce3d837",
     "appRepay20WithPermit": "0x6643a86edcb3b750a7590a077988b3395bac8393b7babb5f1aacba0e1ad8a6ff",
     "appCloseWithPermit": "0x109940c37e7003c5ed32c6b73d922c2364bb4f5054aa002820073c99cc858ba2",
-    "appWithdraw20Musd": "0x011ec18af364a174fc32872f09c4dd947d36f04894ab644ba0b9ee700181f3ca"
+    "appWithdraw20Musd": "0x011ec18af364a174fc32872f09c4dd947d36f04894ab644ba0b9ee700181f3ca",
+    "appOpenBorrow100Musd": "0xac41edbd5183b92e1cf9f631d608712b08f1729a959f5460dcc0a5df79f4b08a",
+    "appPromoteTo1800MusdTrove": "0x9f1a1aae9d3d0106e48dddae8ef4bf22c4e48cebad975a48c9f05dae139b9642"
   },
   "keeper": {
     "address": "0xc9Bea2900c81FB0148851Ec6e70E90B848288653"

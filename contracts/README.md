@@ -22,6 +22,18 @@ deployed against the live MUSD contracts with a 10% protocol share of interest, 
 with 1,500 MUSD borrowed from a real MUSD trove
 ([deposit](https://explorer.test.mezo.org/tx/0x187fee61529432e793c42d773931f3a02e04ed77e5449e6cc5f6e82d3afe6765)).
 
+These ran on the Wave 2 contracts from the web app:
+
+| Step | Transaction |
+| --- | --- |
+| Lender deposits 100 MUSD | [`0x4f90...a3f2`](https://explorer.test.mezo.org/tx/0x4f9038ccdf6f281ac245a1c5cb713b53812a0e5b6127ed3109ffee15beeaa3f2) |
+| Borrow 50 MUSD | [`0xb983...d837`](https://explorer.test.mezo.org/tx/0xb983fd89ef28f81064028503094d1f938c2110f1fd40f9132aafc8901ce3d837) |
+| Repay 20 MUSD with an MUSD permit, no approval | [`0x6643...a6ff`](https://explorer.test.mezo.org/tx/0x6643a86edcb3b750a7590a077988b3395bac8393b7babb5f1aacba0e1ad8a6ff) |
+| Close with an MUSD permit | [`0x1099...8ba2`](https://explorer.test.mezo.org/tx/0x109940c37e7003c5ed32c6b73d922c2364bb4f5054aa002820073c99cc858ba2) |
+| Lender withdraws 20 MUSD | [`0x011e...f3ca`](https://explorer.test.mezo.org/tx/0x011ec18af364a174fc32872f09c4dd947d36f04894ab644ba0b9ee700181f3ca) |
+| Borrow 100 MUSD | [`0xac41...b08a`](https://explorer.test.mezo.org/tx/0xac41edbd5183b92e1cf9f631d608712b08f1729a959f5460dcc0a5df79f4b08a) |
+| Promote it: a signed `OpenTrove` opens a full MUSD trove with 1,800 MUSD of debt and 0.0423 BTC, repays the 100.50 MUSD micro loan and sends the borrower 1,699.50 MUSD | [`0x9f1a...9642`](https://explorer.test.mezo.org/tx/0x9f1a1aae9d3d0106e48dddae8ef4bf22c4e48cebad975a48c9f05dae139b9642) |
+
 This is the Wave 2 deployment. The Wave 1 contracts
 ([vault](https://explorer.test.mezo.org/address/0xE128f5F21Adac4a11A22B55Da77bfdb6ab1304e2),
 [loan book](https://explorer.test.mezo.org/address/0x6Af91a391C31e85479bd324698c30697EbEC8C77))

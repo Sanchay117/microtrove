@@ -4,21 +4,21 @@ Text for each field of the AKINDO submission form. Items in [brackets] still nee
 
 ## Updates in this Wave
 
-Wave 2 answers every point in the Wave 1 review and ships all five Wave 2 commitments but one, which is waiting on testnet BTC.
+Wave 2 fixes everything the Wave 1 review found in the code and materials, and ships all five Wave 2 commitments, including a live promotion into a full MUSD trove from the web app.
 
 **Review fixes**
 - **Critical: the redeem queue can no longer be frozen.** A lender could queue a withdrawal with MUSD itself as the receiver; MUSD refuses transfers to itself, so `processQueue` would revert forever. `requestRedeem` now rejects MUSD and the vault as receivers, and any payment that is still refused becomes a claim for its owner while the queue moves on. Covered by unit tests, the invariant suite (one request in four goes to a receiver that refuses MUSD) and a fork test against real MUSD.
 - **Promotion against real MUSD contracts.** Six Foundry fork tests run on Mezo Testnet's live contracts: promotion through `BorrowerOperationsSignatures.openTroveWithSignature`, a rejected signature, closing with a real MUSD permit, the queue fix and a keeper liquidation. Run them with `MEZO_FORK=1 forge test --match-path "test/fork/*"`.
 - **A protocol fee.** 10% of interest now goes to the protocol, like a reserve factor; lenders keep 90% plus every issuance fee. Anyone can send the protocol's share to its fee recipient, so a broken recipient can never block a repayment.
-- **Redeployed and verified.** New loan book and vault, exact match on Sourcify. The Wave 1 contracts were emptied and paused.
+- **Redeployed and verified.** New loan book and vault, verified on Sourcify (exact runtime match). The Wave 1 contracts were emptied and paused.
 - **A deck and more wallets.** A 12-slide deck, and a wallet picker that lists every EIP-6963 wallet with its icon, plus Coinbase Wallet, WalletConnect and an open-in-MetaMask link on phones.
 
 **Wave 2 commitments**
+- **Live promotion from the web app:** a 100 MUSD micro loan was promoted into a full MUSD trove with 1,800 MUSD of debt. The borrower signed MUSD's `OpenTrove` message, and one transaction opened the trove through `BorrowerOperationsSignatures`, repaid the micro loan and sent them 1,699.50 MUSD: https://explorer.test.mezo.org/tx/0x9f1a1aae9d3d0106e48dddae8ef4bf22c4e48cebad975a48c9f05dae139b9642
 - **One-click repay and close:** the app signs an EIP-2612 permit for MUSD, so repaying is one signature and one transaction.
 - **Keeper hosted around the clock:** a GitHub Actions workflow scans every five minutes and alerts Discord, Slack or Telegram on failed or unprofitable liquidations, failing scans and low gas. The Keepers page shows its runs, its wallet and every liquidation and queue payment since launch.
 - **Lender dashboard:** supply APY and utilization history read from chain since launch, with a table view, and each lender's place in the withdrawal queue with the MUSD ahead of them.
 - **Guided first loan and mobile polish:** a four-step guide that checks itself off from live wallet state, explains the loan the user is about to take, and includes a short MUSD glossary. Every page fits a 375px phone screen.
-- **Live promotion from the web app:** [done, with transaction links / waiting for testnet BTC for the full trove].
 
 ## Links
 
@@ -26,10 +26,11 @@ Wave 2 answers every point in the Wave 1 review and ships all five Wave 2 commit
 | --- | --- |
 | Live project | https://microtrove.vercel.app |
 | GitHub | https://github.com/Sanchay117/microtrove |
-| Deck | https://claude.ai/artifact/KBA2DRVGLdXY3sT8kkgfsS (share it publicly first) |
+| Deck | https://drive.google.com/file/d/1yaoCXQWbPMoU9BGECrD_E65BFebfAubH/view?usp=sharing |
 | Pitch video | https://youtu.be/pOMobneJlXk |
 | Loan book (`Microtroves`) | https://explorer.test.mezo.org/address/0xE0e2155f9C5a5B55eADf952d0a01d3E691092dcf |
 | Lender vault (`MicrotroveVault`) | https://explorer.test.mezo.org/address/0x11fc55CD01411bd1453EE62b40cB4e653f7726eA |
+| Promotion into a full MUSD trove, live | https://explorer.test.mezo.org/tx/0x9f1a1aae9d3d0106e48dddae8ef4bf22c4e48cebad975a48c9f05dae139b9642 |
 | Keeper liquidation, live (Wave 1 contracts) | https://explorer.test.mezo.org/tx/0xfe7a0c608465370d633178d33ef1d7696ad057026eb36172b0f28c32a48dcd51 |
 | Keeper runs | https://github.com/Sanchay117/microtrove/actions/workflows/keeper.yml |
 
@@ -70,13 +71,16 @@ We position Microtrove as an on-ramp to MUSD rather than a competitor. It lets a
 
 **What has run live on Mezo Testnet.**
 
-- Both Wave 2 contracts are verified on Sourcify with an exact match.
+- Both Wave 2 contracts are verified on Sourcify, with an exact match of the deployed bytecode.
 - The vault is seeded with 1,500 MUSD borrowed from a real MUSD trove.
 - These flows ran on chain on the Wave 1 contracts:
   - Borrowing: open, borrow, repay, add and withdraw BTC, close.
   - Lending: deposit, instant withdrawal, queue, cancel, pay out the queue.
-  - Liquidation: our keeper bot liquidated a matured loan by itself 48 seconds after its due date, for $3.98 profit after gas and no bad debt. The borrower then claimed the leftover BTC from the web app.
-- Promotion is covered by fork tests against Mezo's live contracts with real EIP-712 signatures. [Live run: transaction links.]
+  - Liquidation: on a demo loan whose term we cut to one hour so it would mature during the run, our keeper bot liquidated it by itself 48 seconds after its due date, for $3.98 profit after gas and no bad debt. The borrower then claimed the leftover BTC from the web app.
+- These ran from the web app on the Wave 2 contracts:
+  - Lending: deposit and withdrawal.
+  - Borrowing: borrow, then repay and close with MUSD permits.
+  - Promotion: a 100 MUSD micro loan ([open](https://explorer.test.mezo.org/tx/0xac41edbd5183b92e1cf9f631d608712b08f1729a959f5460dcc0a5df79f4b08a)) became a full MUSD trove with 1,800 MUSD of debt ([promote](https://explorer.test.mezo.org/tx/0x9f1a1aae9d3d0106e48dddae8ef4bf22c4e48cebad975a48c9f05dae139b9642)). Fork tests against Mezo's live contracts also cover it, including a rejected signature.
 
 ## Target group
 
