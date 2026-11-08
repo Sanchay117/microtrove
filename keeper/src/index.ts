@@ -189,7 +189,8 @@ for (const signal of ["SIGINT", "SIGTERM"] as const) {
 log.info(`Microtrove keeper · loan book ${config.loanBook} · vault ${config.vault}`);
 log.info(
   account
-    ? `keeper ${account.address}${config.dryRun ? ", dry run" : ""}, scanning every ${config.pollMs / 1_000}s`
+    ? `keeper ${account.address}${config.dryRun ? ", dry run" : ""}, ` +
+        (config.once ? "scanning once" : `scanning every ${config.pollMs / 1_000}s`)
     : "no KEEPER_PRIVATE_KEY, so watching only",
 );
 

@@ -152,8 +152,10 @@ function BotStatus() {
         </p>
       ) : isError ? (
         <p className="muted">GitHub did not answer. The run history is on GitHub.</p>
-      ) : !last ? (
+      ) : !runs ? (
         <p className="muted">Loading the bot's runs...</p>
+      ) : !last ? (
+        <p className="muted">No runs yet. Each scheduled scan shows here once GitHub starts it.</p>
       ) : (
         <>
           <div className="stats stats-2">
