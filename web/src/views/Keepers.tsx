@@ -138,10 +138,13 @@ const ago = (unix: number, now: number) => (now - unix < 60 ? "just now" : `${fm
 function BotStatus() {
   const now = useNow();
   const { data: runs, isError } = useKeeperRuns();
-  const last = runs?.[0];
   const recent = runs ?? [];
-  const failed = recent.filter((r) => r.conclusion === "failure").length;
-  const lastOk = recent.find((r) => r.conclusion === "success");
+  // Each run scans in its first minute, then waits to start the next run, so the newest
+  // run is usually still in progress. Report on the finished ones.
+  const done = recent.filter((r) => r.status === "completed");
+  const last = done[0] ?? recent[0];
+  const failed = done.filter((r) => r.conclusion === "failure").length;
+  const lastOk = done.find((r) => r.conclusion === "success");
 
   return (
     <Card index="3.1" title="Hosted keeper" aside={<span className="badge">every 5 min</span>}>
@@ -173,7 +176,7 @@ function BotStatus() {
             />
             <Stat
               label="Recent runs"
-              value={`${recent.length - failed} of ${recent.length}`}
+              value={`${done.length - failed} of ${done.length}`}
               sub={lastOk ? `succeeded; last success ${ago(lastOk.createdAt, now)}` : "succeeded"}
               tone={failed > 2 ? "warn" : undefined}
             />

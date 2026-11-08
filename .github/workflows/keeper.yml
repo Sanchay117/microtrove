@@ -1,6 +1,11 @@
-# Runs the Microtrove keeper every five minutes on GitHub's runners: one scan per run,
-# liquidating what is due and paying the withdrawal queue. Alert history is carried
+# Runs the Microtrove keeper about every five minutes on GitHub's runners: one scan per
+# run, liquidating what is due and paying the withdrawal queue. Alert history is carried
 # between runs in the Actions cache so the same alert is not sent every five minutes.
+#
+# GitHub runs frequent cron schedules on a best-effort basis and can skip them for hours,
+# so each run starts the next one itself: four minutes after its scan it dispatches this
+# workflow again. A push that changes the keeper starts the chain, and the schedule only
+# restarts it if it ever stops. Cancel a run, or disable the workflow, to stop it.
 #
 # Needs the repository secret KEEPER_PRIVATE_KEY (a testnet wallet holding MUSD and a
 # little BTC) and optionally ALERT_WEBHOOK_URL, ALERT_TELEGRAM_BOT_TOKEN and
@@ -9,20 +14,28 @@ name: keeper
 
 on:
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "7,37 * * * *"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/keeper.yml"
+      - "keeper/**"
   workflow_dispatch:
 
+# One run at a time. A run started while another is going waits, and a newer waiting run
+# replaces an older one, so there is never more than one chain.
 concurrency:
   group: keeper
   cancel-in-progress: false
 
 permissions:
   contents: read
+  actions: write # lets a run dispatch the next one
 
 jobs:
   scan:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     defaults:
       run:
         working-directory: keeper
@@ -52,3 +65,18 @@ jobs:
         with:
           path: keeper/.state.json
           key: keeper-state-${{ github.run_id }}
+      # Runs after a failed scan too, so one bad scan does not stop the bot. A cancelled
+      # run skips it, which is how to stop the chain.
+      - name: Start the next scan
+        if: success() || failure()
+        working-directory: .
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          sleep 240
+          for attempt in 1 2 3; do
+            gh workflow run keeper.yml --ref main && exit 0
+            sleep 20
+          done
+          exit 1

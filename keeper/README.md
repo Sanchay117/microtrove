@@ -105,18 +105,22 @@ which is what makes one-scan-per-run hosting work.
 ## Hosting
 
 **GitHub Actions** (what Microtrove uses). [`.github/workflows/keeper.yml`](../.github/workflows/keeper.yml)
-runs `npm run once` every five minutes and keeps `STATE_FILE` in the Actions cache. A
-failed scan fails the run, so it shows red in the run history and on the Keepers page.
+runs `npm run once` about every five minutes and keeps `STATE_FILE` in the Actions cache.
+A failed scan fails the run, so it shows red in the run history and on the Keepers page.
 Add the secrets once, from the repository root:
 
 ```bash
 gh secret set KEEPER_PRIVATE_KEY          # paste the testnet key when asked
 gh secret set ALERT_WEBHOOK_URL           # optional
-gh workflow run keeper.yml                # first run now instead of waiting
+gh workflow run keeper.yml                # start it now
 ```
 
-GitHub may start scheduled runs a few minutes late under load, and pauses them in a
-repository with no commits for 60 days.
+GitHub runs frequent cron schedules on a best-effort basis and can skip them for hours, so
+the workflow does not rely on one. Each run waits four minutes after its scan and then
+dispatches the next run with the workflow's own token. A push that changes the keeper
+starts the chain, and a schedule twice an hour restarts it if it ever stops. Only one run
+goes at a time. To stop the bot, cancel the current run or disable the workflow in the
+Actions tab.
 
 **Any container host** (Fly.io, Railway, a VPS) for scans every 30 seconds:
 
